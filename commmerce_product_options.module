@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Contains commmerce_product_options.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function commmerce_product_options_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the commmerce_product_options module.
+    case 'help.page.commmerce_product_options':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Allows text fields, checkboxes, price-modifying select elements and other products to be added to a product&#039;s &#039;Add to cart&#039; form.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function commmerce_product_options_theme() {
+  return [
+    'commmerce_product_options' => [
+      'render element' => 'children',
+    ],
+  ];
+}

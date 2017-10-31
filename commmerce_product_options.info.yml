@@ -1,0 +1,7 @@
+name: Commmerce Product Options
+type: module
+description: Allows text fields, checkboxes, price-modifying select elements and other products to be added to a product's 'Add to cart' form.
+core: 8.x
+package: Commerce (contrib)
+dependencies:
+  - commerce:commerce_product
