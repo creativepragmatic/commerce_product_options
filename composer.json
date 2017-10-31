@@ -1,14 +1,14 @@
 {
-  "name": "drupal/commmerce_product_options",
+  "name": "drupal/commerce_product_options",
   "type": "drupal-module",
   "description": "Allows text fields, checkboxes, price-modifying select elements and other products to be added to a product's 'Add to cart' form.",
   "keywords": ["Drupal"],
   "license": "GPL-2.0+",
-  "homepage": "https://www.drupal.org/project/commmerce_product_options",
+  "homepage": "https://www.drupal.org/project/commerce_product_options",
   "minimum-stability": "dev",
   "support": {
-    "issues": "https://www.drupal.org/project/issues/commmerce_product_options",
-    "source": "http://cgit.drupalcode.org/commmerce_product_options"
+    "issues": "https://www.drupal.org/project/issues/commerce_product_options",
+    "source": "http://cgit.drupalcode.org/commerce_product_options"
   },
   "require": { }
 }

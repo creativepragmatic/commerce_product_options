@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\commmerce_product_options\Functional;
+namespace Drupal\Tests\commerce_product_options\Functional;
 
 use Drupal\Core\Url;
 use Drupal\Tests\BrowserTestBase;
@@ -8,7 +8,7 @@ use Drupal\Tests\BrowserTestBase;
 /**
  * Simple test to ensure that main page loads with module enabled.
  *
- * @group commmerce_product_options
+ * @group commerce_product_options
  */
 class LoadTest extends BrowserTestBase {
 
@@ -17,7 +17,7 @@ class LoadTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['commmerce_product_options'];
+  public static $modules = ['commerce_product_options'];
 
   /**
    * A user with permission to administer site configuration.
