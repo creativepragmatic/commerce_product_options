@@ -17,12 +17,12 @@ class ProductOptionsController extends ControllerBase {
    */
   public function optionsPage($commerce_product) {
 
-    return [
+    $build = array(
       '#type' => 'markup',
-      '#markup' => $this->t('Implement method: hello with parameter(s): $product_id'),
-    ];
+      '#markup' => '<div id="options-container"></div>',
+    );
 
-    //return $build;
+    return $build;
   }
 
 }

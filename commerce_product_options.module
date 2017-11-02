@@ -5,9 +5,11 @@
  * Contains commerce_product_options.module.
  */
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_help().
@@ -44,6 +46,24 @@ function commerce_product_options_entity_base_field_info(EntityTypeInterface $en
       ->setDescription(t('A serialized array of product option fields.'));
 
     return $fields;
+  }
+}
+
+/**
+ * Implements hook_entity_operation_alter().
+ */
+function commerce_product_options_entity_operation_alter(array &$operations, EntityInterface $entity) {
+
+  if (!(\Drupal::currentUser()->hasPermission('access commerce administration pages'))) {
+    return;
+  }
+
+  if ($entity->getEntityTypeId() === 'commerce_product') {
+    $operations['options'] = [
+      'title' => 'Options',
+      'url' => Url::fromRoute('commerce_product_options.controller', ['commerce_product' => $entity->id()]),
+      'weight' => 10,
+    ];
   }
 }
 

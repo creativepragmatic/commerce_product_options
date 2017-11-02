@@ -3,5 +3,7 @@ commerce_product_options.controller:
   defaults:
     _controller: '\Drupal\commerce_product_options\Controller\ProductOptionsController::optionsPage'
     _title: 'Options'
+  options:
+    _admin_route: TRUE
   requirements:
     _permission: 'access commerce administration pages'
