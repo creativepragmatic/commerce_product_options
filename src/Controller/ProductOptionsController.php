@@ -17,10 +17,18 @@ class ProductOptionsController extends ControllerBase {
    */
   public function optionsPage($commerce_product) {
 
-    $build = array(
+    $build['product-id'] = [
+      '#type' => 'hidden',
+      '#attributes' => [
+        'id' => 'product-id',
+      ],
+      '#value' => $commerce_product,
+    ];
+
+    $build['options-container'] = [
       '#type' => 'markup',
       '#markup' => '<div id="options-container"></div>',
-    );
+    ];
 
     return $build;
   }
