@@ -1,0 +1,4 @@
+commerce_product_options.controller:
+  route_name: commerce_product_options.controller
+  base_route: entity.commerce_product.canonical
+  title: 'Options'

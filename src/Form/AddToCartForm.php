@@ -184,7 +184,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
       $options = $product->get('options')->value;
       //$product->get('options')->first()->getValue();
       foreach ($options as $option) {
-        $form[$option . ][''] = [
+        $form[$option . ''][''] = [
           '#type' => '',
           '#title' => t(''),
         ];

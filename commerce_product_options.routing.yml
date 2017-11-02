@@ -1,0 +1,7 @@
+commerce_product_options.controller:
+  path: '/product/{commerce_product}/options'
+  defaults:
+    _controller: '\Drupal\commerce_product_options\Controller\ProductOptionsController::optionsPage'
+    _title: 'Options'
+  requirements:
+    _permission: 'access commerce administration pages'
