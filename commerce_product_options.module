@@ -5,6 +5,8 @@
  * Contains commerce_product_options.module.
  */
 
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
@@ -28,6 +30,21 @@ function commerce_product_options_help($route_name, RouteMatchInterface $route_m
  */
 function commerce_product_options_entity_type_build(array &$entity_types) {
   $entity_types['commerce_order_item']->setFormClass('add_to_cart', '\Drupal\commerce_product_options\Form\AddToCartForm');
+}
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function commerce_product_options_entity_base_field_info(EntityTypeInterface $entity_type) {
+
+  if ($entity_type->id() === 'commerce_product') {
+
+    $fields['options'] = BaseFieldDefinition::create('map')
+      ->setLabel(t('Product Options'))
+      ->setDescription(t('A serialized array of product option fields.'));
+
+    return $fields;
+  }
 }
 
 /**

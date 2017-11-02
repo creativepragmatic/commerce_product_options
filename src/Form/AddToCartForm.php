@@ -73,6 +73,13 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
   protected $formId;
 
   /**
+   * The entity manager.
+   *
+   * @var \Drupal\Core\Entity\EntityManagerInterface
+   */
+  protected $entityManager;
+
+  /**
    * Constructs a new AddToCartForm object.
    *
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
@@ -94,7 +101,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
    */
-  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, CartManagerInterface $cart_manager, CartProviderInterface $cart_provider, OrderTypeResolverInterface $order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user) {
+  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, CartManagerInterface $cart_manager, CartProviderInterface $cart_provider, OrderTypeResolverInterface $order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user, EntityManagerInterface $entity_manager) {
     parent::__construct($entity_manager, $entity_type_bundle_info, $time);
 
     $this->cartManager = $cart_manager;
@@ -103,6 +110,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     $this->currentStore = $current_store;
     $this->chainPriceResolver = $chain_price_resolver;
     $this->currentUser = $current_user;
+    $this->entityManager = $entity_manager;
   }
 
   /**
@@ -118,7 +126,8 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
       $container->get('commerce_order.chain_order_type_resolver'),
       $container->get('commerce_store.current_store'),
       $container->get('commerce_price.chain_price_resolver'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('entity.manager')
     );
   }
 
@@ -166,6 +175,22 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
+
+    $product_id = $this->entity->getPurchasedEntity()->getProductId();
+    $product_storage = $this->entityManager->getStorage('commerce_product');
+    $product = $product_storage->load($product_id);
+
+    if (!$product->get('options')->isEmpty()) {
+      $options = $product->get('options')->value;
+      //$product->get('options')->first()->getValue();
+      foreach ($options as $option) {
+        $form[$option . ][''] = [
+          '#type' => '',
+          '#title' => t(''),
+        ];
+      }
+    }
+
     // The widgets are allowed to signal that the form should be hidden
     // (because there's no purchasable entity to select, for example).
     if ($form_state->get('hide_form')) {
