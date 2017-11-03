@@ -1,0 +1,3 @@
+admin:
+  js:
+    js/bundle.js: {}

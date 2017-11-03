@@ -17,7 +17,9 @@ class ProductOptionsController extends ControllerBase {
    */
   public function optionsPage($commerce_product) {
 
-    $build['product-id'] = [
+    $page['#attached']['library'][] = 'commerce_product_options/admin';
+
+    $page['product-id'] = [
       '#type' => 'hidden',
       '#attributes' => [
         'id' => 'product-id',
@@ -25,12 +27,12 @@ class ProductOptionsController extends ControllerBase {
       '#value' => $commerce_product,
     ];
 
-    $build['options-container'] = [
+    $page['options-container'] = [
       '#type' => 'markup',
-      '#markup' => '<div id="options-container"></div>',
+      '#markup' => '<div id="options-admin"></div>',
     ];
 
-    return $build;
+    return $page;
   }
 
 }
