@@ -3,9 +3,11 @@
 namespace Drupal\commerce_product_options\Plugin\rest\resource;
 
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\commerce_product\Entity\Product;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
 
@@ -16,7 +18,7 @@ use Psr\Log\LoggerInterface;
  *   id = "product_options_resource",
  *   label = @Translation("Product options resource"),
  *   uri_paths = {
- *     "canonical" = "/commerce_product_option"
+ *     "canonical" = "/commerce_product_option/{commerce_product_option}"
  *   }
  * )
  */
@@ -72,6 +74,52 @@ class ProductOptionsResource extends ResourceBase {
   }
 
   /**
+   * Responds to GET requests.
+   *
+   * Returns a product options for a specific product.
+   *
+   * @param int $product_id
+   *   The entity if of the product.
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *   The JSON response containing product options.
+   * 
+   * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
+   *   Throws access denied exception if user does not have required permissions.
+   */
+  public function get($product_id) {
+
+    if (!$this->currentUser->hasPermission('administer commerce_product')) {
+      throw new AccessDeniedHttpException();
+    }
+
+    $options = [];
+    $response = new JsonResponse();
+
+    $product = Product::load($product_id);
+    if (!$product->get('options')->isEmpty()) {
+      $options = $product->get('options')->first()->getValue();
+    }
+
+    $base_sku = !empty($options['base_sku']) ? $options['base_sku'] : '';
+    $base_price = !empty($options['base_price']) ? $options['base_price'] : '';
+
+    if (!empty($options['fields'])) {
+      $fields = $options['fields'];
+    } else {
+      $fields = [];
+    }
+
+    $response->setData([
+      'base_sku' => $base_sku,
+      'base_price' => $base_price,
+      'fields' => $fields
+    ]);
+
+    return $response;
+  }
+
+  /**
    * Responds to DELETE requests.
    *
    * Returns a list of bundles for specified entity.
@@ -81,9 +129,7 @@ class ProductOptionsResource extends ResourceBase {
    */
   public function delete() {
 
-    // You must to implement the logic of your REST Resource here.
-    // Use current user after pass authentication to validate access.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('administer commerce_product')) {
       throw new AccessDeniedHttpException();
     }
 
@@ -93,22 +139,45 @@ class ProductOptionsResource extends ResourceBase {
   /**
    * Responds to PATCH requests.
    *
-   * Returns a list of bundles for specified entity.
+   * Updates options for specified product entity.
+   *
+   * @param int $product_id
+   *   The entity if of the product.
+   * @param $data
+   *   JSON list of options to be updated.
+   * 
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *   The JSON response containing product options.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    *   Throws exception expected.
    */
-  public function patch() {
+  public function patch($product_id, $data) {
 
-\Drupal::logger('commerce_product_options')->notice('patch()');
+// TODO: https://www.ambidev.com/category/drupal-8/
 
-    // You must to implement the logic of your REST Resource here.
-    // Use current user after pass authentication to validate access.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('administer commerce_product')) {
       throw new AccessDeniedHttpException();
     }
 
-    return new ResourceResponse('Implement REST State PATCH!');
-  }
+    $response = new JsonResponse();
 
+    $product = Product::load($product_id);
+    if (!$product->get('options')->isEmpty()) {
+      $options = $product->get('options')->first()->getValue();
+    }
+
+    switch ($data['operation']) {
+      case 'UPDATE_BASE_FIELDS':
+        $options['base_sku'] = $data['base_sku'];
+        $options['base_price'] = $data['base_price'];
+        $product->set('options', $options);
+        $product->save();
+        $response->setData([
+          'base_sku' => $data['base_sku'],
+          'base_price' => $data['base_price']
+        ]);
+        return $response;
+    }
+  }
 }

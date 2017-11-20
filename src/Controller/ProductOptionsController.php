@@ -29,7 +29,7 @@ class ProductOptionsController extends ControllerBase {
 
     $page['options-container'] = [
       '#type' => 'markup',
-      '#markup' => '<div id="option-set-admin"></div>',
+      '#markup' => '<div id="product-options-admin"></div>',
     ];
 
     return $page;
