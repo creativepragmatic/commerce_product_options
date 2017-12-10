@@ -154,8 +154,6 @@ class ProductOptionsResource extends ResourceBase {
    */
   public function patch($product_id, $data) {
 
-// TODO: https://www.ambidev.com/category/drupal-8/
-
     if (!$this->currentUser->hasPermission('administer commerce_product')) {
       throw new AccessDeniedHttpException();
     }
@@ -177,6 +175,18 @@ class ProductOptionsResource extends ResourceBase {
           'base_sku' => $data['base_sku'],
           'base_price' => $data['base_price']
         ]);
+        return $response;
+      case 'ADD_TEXT_FIELD':
+        $field['type'] = $data['type'];
+        $field['title'] = $data['title'];
+        $field['helpText'] = $data['helpText'];
+        $field['size'] = $data['size'];
+        $field['required'] = $data['required'];
+        $options['fields'][] = $field;
+        $product->set('options', $options);
+        $product->save();
+        $fields = $product->get('options')->first()->getValue()['fields'];
+        $response->setData($fields);
         return $response;
     }
   }

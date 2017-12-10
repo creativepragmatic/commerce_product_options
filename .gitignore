@@ -1,6 +1,3 @@
 .babelrc
-build
 node_modules
-package.json
-package-lock.json
-webpack.config.js
+js/dist/bundle.js
