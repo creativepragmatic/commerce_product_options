@@ -1,6 +1,0 @@
-// Base Variations
-export const GET_BASE_INFO_SUCCESS = 'GET_BASE_INFO_SUCCESS';
-export const UPDATE_BASE_INFO_SUCCESS = 'UPDATE_BASE_INFO_SUCCESS';
-
-// Options
-export const ADD_TEXT_FIELD_SUCCESS = 'ADD_TEXT_FIELD_SUCCESS';
