@@ -31,6 +31,7 @@ export class TextForm extends Component {
   }
 
   handleSubmit(event) {
+    var _this = this;
     event.preventDefault();
 
     var textFieldData = {
@@ -63,7 +64,7 @@ export class TextForm extends Component {
             fields: response.data
           };
           store.dispatch(action);
-console.log(store.getState());
+          _this.clear();
         })
         .catch(function (error) {
 console.log(error);
@@ -71,14 +72,18 @@ console.log(error);
       });
   }
 
-  handleClear(event) {
-    event.preventDefault();
+  clear() {
     this.setState({
       fieldText: '',
       helpText: '',
-      size: '',
+      size: 30,
       isRequired: false
     });
+  }
+
+  handleClear(event) {
+    event.preventDefault();
+    this.clear();
   }
 
   render() {
