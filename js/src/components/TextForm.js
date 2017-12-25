@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { Get, Delete, Patch } from 'react-axios';
 import store from '../store';
 import * as types from '../actions/action-types';
 

@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
+import axios from 'axios';
+import store from '../store';
+import * as types from '../actions/action-types';
 
 export class CheckboxForm extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      checkboxText: '',
+      checkboxTitle: '',
       isRequired: false
     };
 
@@ -25,17 +28,55 @@ export class CheckboxForm extends Component {
   }
 
   handleSubmit(event) {
+    var _this = this;
     event.preventDefault();
-console.log(this.state.checkboxText);
-console.log(this.state.isRequired);
+
+    var checkboxData = {
+      operation: 'ADD_CHECKBOX',
+      product_id: document.getElementById('product-id').value,
+      type: 'checkbox',
+      title: this.state.checkboxTitle,
+      required: this.state.isRequired
+    };
+
+    axios.get(Drupal.url('rest/session/token'))
+      .then(function (response) {
+        return response.data;
+      })
+      .then(function (csrfToken) {
+        axios({
+          method: 'PATCH',
+          url: Drupal.url('commerce_product_option') + '/' + checkboxData.product_id,
+          data: JSON.stringify(checkboxData),
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          }
+        })
+        .then(function(response) {
+          var action = {
+            type: types.ADD_CHECKBOX_SUCCESS,
+            fields: response.data
+          };
+          store.dispatch(action);
+          _this.clear();
+        })
+        .catch(function (error) {
+console.log(error);
+        });
+      });
+  }
+
+  clear() {
+    this.setState({
+      checkboxTitle: '',
+      isRequired: false
+    });
   }
 
   handleClear(event) {
     event.preventDefault();
-    this.setState({
-      checkboxText: '',
-      isRequired: false
-    });
+    this.clear();
   }
 
   render() {
@@ -43,13 +84,13 @@ console.log(this.state.isRequired);
       <form onSubmit={this.handleSubmit}>
         <label>Checkbox text: <span className="required-asterisk">*</span><br/>
           <textarea
-            name="checkboxText"
+            name="checkboxTitle"
             rows="4"
             cols="20"
             minLength="1"
             maxLength="250"
             required
-            value={this.state.checkboxText}
+            value={this.state.checkboxTitle}
             onChange={this.handleInputChange} />
         </label>
         <div>

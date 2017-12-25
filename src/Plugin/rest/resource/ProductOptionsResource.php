@@ -188,6 +188,18 @@ class ProductOptionsResource extends ResourceBase {
         $fields = $product->get('options')->first()->getValue()['fields'];
         $response->setData($fields);
         return $response;
+      case 'ADD_CHECKBOX':
+        $field['type'] = $data['type'];
+        $field['title'] = $data['title'];
+        $field['required'] = $data['required'];
+        $options['fields'][] = $field;
+        $product->set('options', $options);
+        $product->save();
+        $fields = $product->get('options')->first()->getValue()['fields'];
+        $response->setData($fields);
+        return $response;
+//\Drupal::logger('commerce_product_options')->notice($field['required']);
+//return 'test';
     }
   }
 }
