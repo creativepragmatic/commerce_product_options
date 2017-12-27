@@ -181,13 +181,27 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     $product = $product_storage->load($product_id);
 
     if (!$product->get('options')->isEmpty()) {
-      $options = $product->get('options')->value;
-      //$product->get('options')->first()->getValue();
+      $options = $product->get('options')->getValue()[0]['fields'];
       foreach ($options as $option) {
-        $form[$option . ''][''] = [
-          '#type' => '',
-          '#title' => t(''),
+        $machine_name_title = preg_replace('@[^a-z0-9-]+@', '_', strtolower($option['title']));
+
+        $form['options'][$machine_name_title] = [
+          '#type' => $option['type'],
+          '#title' => t($option['title']),
+          '#required' => $option['required'] ? TRUE : FALSE,
         ];
+ 
+        if (!empty($option['size'])) {
+          $form['options'][$machine_name_title]['#size'] = $option['size'];
+        }
+
+        if (!empty($option['options'])) {
+          foreach ($option['options'] as $select_option) {
+            $select_options[$select_option['skuSegment']] = $select_option['optionTitle'];
+          }
+          $form['options'][$machine_name_title]['#options'] = $select_options;
+          unset($select_options);
+        }
       }
     }
 

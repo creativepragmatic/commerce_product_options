@@ -20,6 +20,10 @@ const optionReducer = function(state = initialState, action) {
       return Object.assign(...state, {
         fields: action.fields
       });
+    case types.ADD_SELECT_SUCCESS:
+      return Object.assign(...state, {
+        fields: action.fields
+      });
     default:
       return state;
   }

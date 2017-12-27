@@ -1,4 +1,7 @@
 import React, { Component } from 'react'
+import axios from 'axios';
+import store from '../store';
+import * as types from '../actions/action-types';
 
 export class SelectForm extends Component {
 
@@ -11,7 +14,7 @@ export class SelectForm extends Component {
         optionTitle: '',
         isDefault: false,
         skuSegment: '',
-        priceModifier: 0
+        priceModifier: ''
       }
 	};
 
@@ -20,7 +23,7 @@ export class SelectForm extends Component {
     this.handleAddOption = this.handleAddOption.bind(this);
     this.handleClearOption = this.handleClearOption.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleClearForm = this.handleClearForm.bind(this);
+    this.handleClearSelectAll = this.handleClearSelectAll.bind(this);
   }
 
   handleInputChange(event) {
@@ -46,39 +49,90 @@ export class SelectForm extends Component {
 
   handleAddOption(event) {
     event.preventDefault();
-    const changedOptions = this.state.options;
+
+    var changedOptions = this.state.options;
     changedOptions.push(this.state.newOption);
     this.setState({
       options: changedOptions
     });
-    this.setState({
-      newOption: {}
-	});
-console.log(this.state.options);
+    this.clearOption();
   }
 
-  handleClearOption(event) {
-    event.preventDefault();
+  clearOption() {
     this.setState({
       newOption: {
         optionTitle: '',
         isDefault: false,
         skuSegment: '',
-        priceModifier: 0
+        priceModifier: ''
       }
 	});
   }
 
-  handleSubmit(event) {
+  handleClearOption(event) {
     event.preventDefault();
-console.log(this.state.options);
+    this.clearOption();
   }
 
-  handleClearForm(event) {
+  handleSubmit(event) {
+    var _this = this;
     event.preventDefault();
+
+    var selectData = {
+      operation: 'ADD_SELECT',
+      product_id: document.getElementById('product-id').value,
+      type: 'select',
+      title: this.state.title,
+      options: this.state.options
+    };
+
+    axios.get(Drupal.url('rest/session/token'))
+      .then(function (response) {
+        return response.data;
+      })
+      .then(function (csrfToken) {
+        axios({
+          method: 'PATCH',
+          url: Drupal.url('commerce_product_option') + '/' + selectData.product_id,
+          data: JSON.stringify(selectData),
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          }
+        })
+        .then(function(response) {
+          var action = {
+            type: types.ADD_SELECT_SUCCESS,
+            fields: response.data
+          };
+          store.dispatch(action);
+          _this.clearAll();
+        })
+        .catch(function (error) {
+console.log(error);
+        });
+      })
+      .catch(function (error) {
+console.log(error);
+      });
+  }
+
+  clearAll() {
     this.setState({
-      title: ''
+      title: '',
+      options: [],
+      newOption: {
+        optionTitle: '',
+        isDefault: false,
+        skuSegment: '',
+        priceModifier: ''
+      }
 	});
+  }
+
+  handleClearSelectAll(event) {
+    event.preventDefault();
+    this.clearAll();
   }
 
   render() {
@@ -92,54 +146,60 @@ console.log(this.state.options);
             value={this.state.title}
             onChange={this.handleInputChange} />
         </label>
-        <label>Options:<br/>
-          <ul>
-            {this.state.options.map((option, index) =>
-              <li key={index}>
-                {option.optionTitle}
-              </li>
-            )}
-          </ul>
-        </label>
-        <div>
-          <label>Option title: <span className="required-asterisk">*</span><br/>
-            <input
-              name="optionTitle"
-              type="text"
-              required
-              value={this.state.newOption.optionTitle}
-              onChange={this.handleAddOptionChange} />
-          </label>
-          <div>
-            <input
-              name="isDefault"
-              type="checkbox"
-              value={this.state.newOption.isDefault}
-              onChange={this.handleAddOptionChange} />
-            <span>&nbsp;Default</span>
+        <fieldset>
+          <legend>Options</legend>
+          <div id="option-container">
+            <div>
+              <label>Title: <span className="required-asterisk">*</span><br/>
+                <input
+                  name="optionTitle"
+                  type="text"
+                  value={this.state.newOption.optionTitle}
+                  onChange={this.handleAddOptionChange} />
+              </label>
+              <div>
+                <input
+                  name="isDefault"
+                  type="checkbox"
+                  value={this.state.newOption.isDefault}
+                  onChange={this.handleAddOptionChange} />
+                <span>&nbsp;Default</span>
+              </div>
+              <label>SKU segment:<br/>
+                <input
+                  name="skuSegment"
+                  type="text"
+                  size="8"
+                  value={this.state.newOption.skuSegment}
+                  onChange={this.handleAddOptionChange} />
+              </label>
+              <label>Price modifier:<br/>
+                <input
+                  name="priceModifier"
+                  type="text"
+                  size="6"
+                  maxLength="6"
+                  value={this.state.newOption.priceModifier}
+                  onChange={this.handleAddOptionChange} />
+              </label>
+            </div>
+            <div>
+              <label>Option list:<br/>
+                <ul>
+                  {this.state.options.map((option, index) =>
+                    <li key={index}>
+                      {option.optionTitle}
+                    </li>
+                  )}
+                </ul>
+              </label>
+            </div>
           </div>
-          <label>SKU segment:<br/>
-            <input
-              name="skuSegment"
-              type="text"
-              size="8"
-              value={this.state.newOption.skuSegment}
-              onChange={this.handleAddOptionChange} />
-          </label>
-          <label>Price modifier:<br/>
-            <input
-              name="priceModifier"
-              type="text"
-              size="6"
-              maxLength="6"
-              value={this.state.newOption.priceModifier}
-              onChange={this.handleAddOptionChange} />
-          </label>
-          <button onClick={this.handleAddOption}>Add Option</button>
-          <button onClick={this.handleClearOption}>Clear Option</button>
-        </div>
+          <button onClick={this.handleAddOption}>Add</button>
+          <button onClick={this.handleClearOption}>Clear</button>
+        </fieldset>
         <input type="submit" value="Save" />
-        <button onClick={this.handleClearForm}>Clear Form</button>
+        <button onClick={this.handleClearSelectAll}>Clear All</button>
       </form>
     );
   }

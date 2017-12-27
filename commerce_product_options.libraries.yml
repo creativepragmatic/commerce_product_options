@@ -1,3 +1,6 @@
 admin:
   js:
     js/dist/bundle.js: {}
+  css:
+    theme:
+      css/commerce_product_options.form.css: {}

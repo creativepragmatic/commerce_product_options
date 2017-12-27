@@ -44,16 +44,6 @@ console.log(error);
       });
   }
 
-//    array (
-//      'type' => 'textfield',
-//      'title' => 'Test field',
-//      'helpText' => 'Test help text.',
-//      'size' => 30,
-//      'required' => false,
-//    ),
-
-//<tr><td>{option.size}</td><td>{option.required ? 'YES' : 'NO'}</td></tr>
-
   render() {
     return (
       <table className="option-set-table">
