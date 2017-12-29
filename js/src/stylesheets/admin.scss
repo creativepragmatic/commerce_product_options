@@ -1,12 +1,36 @@
-.option-set-admin {
-  display: flex;
-  flex-direction: row;
-}
-
-.option-set-table {
-  display: inline-block;
-}
-
 .required-asterisk {
   color: red;
+}
+
+#base-variations-container {
+  display: flex;
+}
+
+#base-form {
+  margin-right: 1rem;
+}
+
+#options-container {
+  display: flex;
+}
+
+#select-option-container {
+  display: flex;
+}
+
+#select-option-fields {
+  margin-right: 0.5rem;
+}
+
+#option-form-fields {
+  margin-right: 1rem;
+}
+
+#option-set-table {
+  margin-left: 0.5rem;
+  width: auto;
+}
+
+#variations-table {
+  width: auto;
 }

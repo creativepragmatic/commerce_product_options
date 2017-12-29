@@ -148,8 +148,8 @@ console.log(error);
         </label>
         <fieldset>
           <legend>Options</legend>
-          <div id="option-container">
-            <div>
+          <div id="select-option-container">
+            <div id="select-option-fields">
               <label>Title: <span className="required-asterisk">*</span><br/>
                 <input
                   name="optionTitle"

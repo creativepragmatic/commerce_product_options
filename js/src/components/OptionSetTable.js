@@ -44,30 +44,53 @@ console.log(error);
       });
   }
 
+  buildTable() {
+    var rowBuffer = []
+
+    this.state.fields.forEach(function(field, fieldIndex) {
+      rowBuffer.push(<OptionSetRow
+        key={fieldIndex}
+        rowType="field-row"
+        title={field.title}
+        size={field.size}
+        required={field.required ? 'YES' : 'NO'}
+        type={field.type} />);
+      
+      if (field.hasOwnProperty('options') && field.options.length > 0) {
+        field.options.forEach(function(option, optionIndex) {
+          rowBuffer.push(<OptionSetRow
+            key={optionIndex}
+            rowType="option-row"
+            title={'\xa0\xa0\xa0\xa0\xa0\xa0' + option.optionTitle}
+            sku={option.skuSegment}
+            modifier={option.priceModifier}
+            isDefault={option.isDefault ? 'YES' : 'NO'} />);
+        });
+      }
+    });
+
+    return (
+      <tbody>
+        {rowBuffer}
+      </tbody>
+    );
+  }
+
   render() {
     return (
-      <table className="option-set-table">
+      <table id="option-set-table">
         <thead>
           <tr>
-            <th>Type</th>
             <th>Title</th>
             <th>SKU Segment</th>
             <th>Price Modifier</th>
+            <th>Default</th>
             <th>Size</th>
             <th>Required</th>
+            <th>Type</th>
           </tr>
         </thead>
-        <tbody>
-          {this.state.fields.map((option, index) => (
-            <OptionSetRow
-              key={index}
-              type={option.type} 
-              title={option.title}
-              size={option.size}
-              required={option.required ? 'YES' : 'NO'} />
-          ))}
-
-        </tbody>
+        {this.buildTable()}
       </table>
     );
   }

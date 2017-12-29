@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { Get, Delete, Patch } from 'react-axios';
 import store from '../store';
 import * as types from '../actions/action-types';
 
@@ -103,7 +102,7 @@ console.log(error);
 
   render() {
     return (
-      <form onSubmit={this.handleSubmit}>
+      <form id="base-form" onSubmit={this.handleSubmit}>
         <label>Base SKU: <span className="required-asterisk">*</span><br/>
           <input
             name="baseSKU"
