@@ -3,7 +3,9 @@
 namespace Drupal\commerce_product_options\Plugin\rest\resource;
 
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\commerce_price\Price;
 use Drupal\commerce_product\Entity\Product;
+use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -208,6 +210,31 @@ class ProductOptionsResource extends ResourceBase {
         $fields = $product->get('options')->first()->getValue()['fields'];
         $response->setData($fields);
         return $response;
+      case 'UPDATE_PRODUCT_VARIATIONS':
+        $title = $product->getTitle();
+        $newVariations = [];
+        foreach($data['variations'] as $variation) {
+          $newVariation = ProductVariation::create([
+            'type' => 'hpde_variation',
+            'title' => $title,
+            'sku' => $variation['SKU'],
+            'price' => new Price($variation['price'], 'USD'),
+            'status' => 1,
+          ]);
+          array_push($newVariations, $newVariation);
+        }
+        $product->setVariations($newVariations);
+        $product->save();
+        $response->setData(TRUE);
+        return $response;
     }
   }
 }
+
+//    $variation = ProductVariation::create([
+//      'title' => 'My Super Product',
+//    ]);
+
+//    $variation1 = ProductVariation::create([
+//      'title' => $this->randomString(),
+//    ]);
