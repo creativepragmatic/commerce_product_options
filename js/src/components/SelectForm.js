@@ -10,6 +10,7 @@ export class SelectForm extends Component {
     this.state = {
       title: '',
       options: [],
+      isRequired: false,
       newOption: {
         optionTitle: '',
         isDefault: false,
@@ -83,7 +84,8 @@ export class SelectForm extends Component {
       product_id: document.getElementById('product-id').value,
       type: 'select',
       title: this.state.title,
-      options: this.state.options
+      options: this.state.options,
+      required: this.state.isRequired
     };
 
     axios.get(Drupal.url('rest/session/token'))
@@ -126,7 +128,8 @@ console.log(error);
         isDefault: false,
         skuSegment: '',
         priceModifier: ''
-      }
+      },
+      isRequired: false
 	});
   }
 
@@ -198,6 +201,14 @@ console.log(error);
           <button onClick={this.handleAddOption}>Add</button>
           <button onClick={this.handleClearOption}>Clear</button>
         </fieldset>
+        <div>
+          <input
+            name="isRequired"
+            type="checkbox"
+            checked={this.state.isRequired}
+            onChange={this.handleInputChange} />
+          <span>&nbsp;Required</span>
+        </div>
         <input type="submit" value="Save" />
         <button onClick={this.handleClearSelectAll}>Clear All</button>
       </form>

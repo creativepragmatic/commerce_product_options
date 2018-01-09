@@ -34,3 +34,27 @@
 #variations-table {
   width: auto;
 }
+
+.field-row {
+  .field-title {
+    font-weight: bold;
+  }
+  .field-required {
+    text-align: center;
+    width: 5rem;
+  }
+}
+
+.option-row {
+  .option-sku {
+    width: 8rem;
+  }
+  .option-price {
+    text-align: right;
+    width: 9rem;
+  }
+  .option-default {
+    text-align: center;
+    width: 4rem;
+  }
+}

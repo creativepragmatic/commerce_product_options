@@ -204,6 +204,7 @@ class ProductOptionsResource extends ResourceBase {
         $field['type'] = $data['type'];
         $field['title'] = $data['title'];
         $field['options'] = $data['options'];
+        $field['required'] = $data['required'];
         $options['fields'][] = $field;
         $product->set('options', $options);
         $product->save();
@@ -230,11 +231,3 @@ class ProductOptionsResource extends ResourceBase {
     }
   }
 }
-
-//    $variation = ProductVariation::create([
-//      'title' => 'My Super Product',
-//    ]);
-
-//    $variation1 = ProductVariation::create([
-//      'title' => $this->randomString(),
-//    ]);

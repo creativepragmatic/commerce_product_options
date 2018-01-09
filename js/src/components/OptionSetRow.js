@@ -4,14 +4,44 @@ export class OptionSetRow extends Component {
   render() {
     return (
       <tr className={this.props.rowType}>
-        <td>{this.props.title}</td>
-        <td>{this.props.sku}</td>
-        <td>{this.props.modifier}</td>
-        <td>{this.props.isDefault}</td>
+        {this.props.rowType === 'field-row' && this.props.type !== 'checkbox' &&
+           <td className="field-title" colspan="4">{this.props.title}</td>
+        }
+        {this.props.rowType === 'field-row' && this.props.type === 'checkbox' &&
+           <td colspan="4">{this.props.title}</td>
+        }
+        {this.props.rowType === 'option-row' &&
+           <td>{this.props.title}</td>
+        }
+        {this.props.rowType === 'option-row' &&
+           <td className="option-sku">{this.props.sku}</td>
+        }
+        {this.props.rowType === 'option-row' &&
+           <td className="option-price">{this.props.modifier}</td>
+        }
+        {this.props.rowType === 'option-row' &&
+           <td className="option-default">{this.props.isDefault}</td>
+        }
         <td>{this.props.size}</td>
-        <td>{this.props.required}</td>
+        <td className="field-required">{this.props.required}</td>
         <td>{this.props.type}</td>
       </tr>
     );
   }
 }
+
+      /*
+      {isLoggedIn ? (
+        <LogoutButton onClick={this.handleLogoutClick} />
+      ) : (
+        <LoginButton onClick={this.handleLoginClick} />
+      )}
+
+      { this.props.loggedIn ?
+          <span>
+            <h2>{ `Welcome Back ${ this.props.name }` }</h2>
+              <p>You can visit settings to reset your password</p>
+          </span>
+          :
+          <h2>Hey man! Log in to see this section</h2>
+      }*/

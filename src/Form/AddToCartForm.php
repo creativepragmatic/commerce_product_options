@@ -8,12 +8,15 @@ use Drupal\commerce_cart\CartManagerInterface;
 use Drupal\commerce_cart\CartProviderInterface;
 use Drupal\commerce_order\Resolver\OrderTypeResolverInterface;
 use Drupal\commerce_price\Resolver\ChainPriceResolverInterface;
+use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_store\CurrentStoreInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -73,11 +76,11 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
   protected $formId;
 
   /**
-   * The entity manager.
+   * The entity type manager.
    *
-   * @var \Drupal\Core\Entity\EntityManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityManager;
+  protected $entityTypeManager;
 
   /**
    * Constructs a new AddToCartForm object.
@@ -100,8 +103,10 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
    *   The chain base price resolver.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, CartManagerInterface $cart_manager, CartProviderInterface $cart_provider, OrderTypeResolverInterface $order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user, EntityManagerInterface $entity_manager) {
+  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, CartManagerInterface $cart_manager, CartProviderInterface $cart_provider, OrderTypeResolverInterface $order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($entity_manager, $entity_type_bundle_info, $time);
 
     $this->cartManager = $cart_manager;
@@ -110,7 +115,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     $this->currentStore = $current_store;
     $this->chainPriceResolver = $chain_price_resolver;
     $this->currentUser = $current_user;
-    $this->entityManager = $entity_manager;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -127,7 +132,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
       $container->get('commerce_store.current_store'),
       $container->get('commerce_price.chain_price_resolver'),
       $container->get('current_user'),
-      $container->get('entity.manager')
+      $container->get('entity_type.manager')
     );
   }
 
@@ -182,6 +187,12 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
     if (!$product->get('options')->isEmpty()) {
       $options = $product->get('options')->getValue()[0]['fields'];
+    
+      $form['base-sku'] = [
+        '#type' => 'hidden',
+        '#value' => $product->get('options')->getValue()[0]['base_sku'],
+      ];
+
       foreach ($options as $option) {
         $machine_name_title = preg_replace('@[^a-z0-9-]+@', '_', strtolower($option['title']));
 
@@ -197,9 +208,14 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
         if (!empty($option['options'])) {
           foreach ($option['options'] as $select_option) {
+            if ($select_option['isDefault']) {
+              $default = $select_option['skuSegment'];
+            }
             $select_options[$select_option['skuSegment']] = $select_option['optionTitle'];
           }
           $form['options'][$machine_name_title]['#options'] = $select_options;
+          $form['options'][$machine_name_title]['#default_value'] = $default;
+          unset($default);
           unset($select_options);
         }
       }
@@ -218,6 +234,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
    * {@inheritdoc}
    */
   protected function actions(array $form, FormStateInterface $form_state) {
+
     $actions['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Add to cart'),
@@ -232,9 +249,12 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
-
     /** @var \Drupal\commerce_order\Entity\OrderItemInterface $order_item */
     $order_item = $this->entity;
+
+    $options = $this->buildOptions($form_state);
+    $order_item->setData('product_option', $options);
+
     /** @var \Drupal\commerce\PurchasableEntityInterface $purchased_entity */
     $purchased_entity = $order_item->getPurchasedEntity();
 
@@ -255,8 +275,33 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
   public function buildEntity(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\commerce_order\Entity\OrderItemInterface $entity */
     $entity = parent::buildEntity($form, $form_state);
+
+    $select_fields = [];
+    $selected_options = $form_state->getValues();
+    $purchased_entity_sku = $form_state->getValue('base-sku');
+    $all_fields = $form_state->getCompleteForm();
+    foreach ($all_fields['options'] as $field) {
+      if ($field['#type'] === 'select') {
+        $select_fields[] = $field['#name'];
+        $purchased_entity_sku .= '-' . $selected_options[$field['#name']];
+      }
+    }
+
+    if (!empty($select_fields) > 0) {
+      $storage = $this->entityTypeManager
+        ->getStorage('commerce_product_variation');
+      $entity_id = $storage
+        ->getQuery()
+        ->condition('sku', $purchased_entity_sku)
+        ->execute();
+      $purchased_entity = $storage->load(reset($entity_id));
+      $entity->set('purchased_entity', $purchased_entity);
+    }
+    else {
+      $purchased_entity = $entity->getPurchasedEntity();
+    }
+
     // Now that the purchased entity is set, populate the title and price.
-    $purchased_entity = $entity->getPurchasedEntity();
     $entity->setTitle($purchased_entity->getOrderItemTitle());
     if (!$entity->isUnitPriceOverridden()) {
       $store = $this->selectStore($purchased_entity);
@@ -302,6 +347,32 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     }
 
     return $store;
+  }
+
+  private function buildOptions(FormStateInterface $form_state) {
+
+    $options = [];
+    $all_fields = $form_state->getCompleteForm();
+    $field_keys = array_intersect_key($form_state->getValues(), $all_fields['options']);
+
+    foreach ($all_fields['options'] as $field) {
+      if (array_key_exists($field['#name'], $field_keys)) {
+        $title = $field['#title']->getUntranslatedString();
+        switch ($field['#type']) {
+          case 'select':
+            $options[$title] = $field['#options'][$field['#value']];
+            break;
+          case 'textfield':
+            $options[$title] = $field['#value'];
+            break;
+          case 'checkbox':
+            $options[$title] = $field['#value'];
+            break;
+        }
+      }
+    }
+
+    return $options;
   }
 
 }
