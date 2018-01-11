@@ -303,6 +303,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
     // Now that the purchased entity is set, populate the title and price.
     $entity->setTitle($purchased_entity->getOrderItemTitle());
+
     if (!$entity->isUnitPriceOverridden()) {
       $store = $this->selectStore($purchased_entity);
       $context = new Context($this->currentUser, $store);
@@ -366,7 +367,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
             $options[$title] = $field['#value'];
             break;
           case 'checkbox':
-            $options[$title] = $field['#value'];
+            $options[$title] = $field['#value'] ? 'Yes': 'No';
             break;
         }
       }

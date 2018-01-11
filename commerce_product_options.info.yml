@@ -5,3 +5,6 @@ package: Commerce (contrib)
 core: 8.x
 dependencies:
   - commerce_cart
+config_devel:
+  install:
+    - views.view.commerce_product_options_cart_form
