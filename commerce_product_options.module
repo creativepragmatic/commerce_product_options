@@ -35,13 +35,6 @@ function commerce_product_options_entity_type_build(array &$entity_types) {
 }
 
 /**
- * Implements hook_views_data_alter().
- */
-function commerce_product_options_views_data_alter(array &$data) {
-dsm($data);
-}
-
-/**
  * Implements hook_entity_base_field_info().
  */
 function commerce_product_options_entity_base_field_info(EntityTypeInterface $entity_type) {
