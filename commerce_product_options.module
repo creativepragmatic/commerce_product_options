@@ -7,6 +7,7 @@
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
@@ -65,6 +66,13 @@ function commerce_product_options_entity_operation_alter(array &$operations, Ent
       'weight' => 10,
     ];
   }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view_alter().
+ */
+function commerce_product_options_commerce_order_view_alter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
+  $build['order_items']['#name'] = 'commerce_product_options_order_item_table';
 }
 
 /**

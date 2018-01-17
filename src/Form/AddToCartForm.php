@@ -211,8 +211,16 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
             if ($select_option['isDefault']) {
               $default = $select_option['skuSegment'];
             }
-            $select_options[$select_option['skuSegment']] = $select_option['optionTitle'];
+            if (!empty($select_option['priceModifier'])) {
+              $modifier = ', +$' . money_format('%.2n', $select_option['priceModifier']);
+              $title = $select_option['optionTitle'] . $modifier;
+            }
+            else {
+              $title = $select_option['optionTitle'];
+            }
+            $select_options[$select_option['skuSegment']] = $title;
           }
+
           $form['options'][$machine_name_title]['#options'] = $select_options;
           $form['options'][$machine_name_title]['#default_value'] = $default;
           unset($default);
@@ -303,7 +311,6 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
     // Now that the purchased entity is set, populate the title and price.
     $entity->setTitle($purchased_entity->getOrderItemTitle());
-
     if (!$entity->isUnitPriceOverridden()) {
       $store = $this->selectStore($purchased_entity);
       $context = new Context($this->currentUser, $store);

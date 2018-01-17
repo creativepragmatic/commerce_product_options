@@ -4,7 +4,10 @@ description: Allows text fields, checkboxes, price-modifying select elements and
 package: Commerce (contrib)
 core: 8.x
 dependencies:
-  - commerce_cart
+  - commerce
+  - commerce:commerce_cart
+  - commerce:commerce_checkout
 config_devel:
   install:
     - views.view.commerce_product_options_cart_form
+    - views.view.commerce_product_options_checkout_order_summary

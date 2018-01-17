@@ -3,6 +3,8 @@
 namespace Drupal\commerce_product_options\Plugin\views\field;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\commerce_order\Entity\Order;
+use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 
@@ -50,8 +52,15 @@ class ProductOptionsField extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function render(ResultRow $values) {
-    $title = $values->_relationship_entities['order_items']->getTitle();
-    $options = $values->_relationship_entities['order_items']->getData('product_option');
+
+    if ($values->_entity instanceof Order) {
+      $title = $values->_relationship_entities['order_items']->getTitle();
+      $options = $values->_relationship_entities['order_items']->getData('product_option');
+    }
+    else if ($values->_entity instanceof OrderItem) {
+      $title = $values->_entity->getTitle();
+      $options = $values->_entity->getData('product_option');
+    }
 
     $options_ul = '<br/><ul>';
     if (!empty($options)) {

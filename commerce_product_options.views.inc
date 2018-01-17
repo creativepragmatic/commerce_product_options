@@ -18,19 +18,18 @@ use Drupal\system\ActionConfigEntityInterface;
 */
 function commerce_product_options_views_data() {
 
-    $data['views']['table']['group'] = t('Custom Global');
+    $data['views']['table']['group'] = t('Product Options');
     $data['views']['table']['join'] = [
       // #global is a special flag which allows a table to appear all the time.
       '#global' => [],
     ];
 
-
     $data['views']['product_options_field'] = [
-        'title' => t('Product + Options'),
-        'help' => t('Displays order item and field options if available.'),
-        'field' => [
-            'id' => 'product_options_field',
-        ],
+      'title' => t('Product & Options'),
+      'help' => t('Displays order item and field options if available.'),
+      'field' => [
+        'id' => 'product_options_field',
+      ],
     ];
 
     return $data;
