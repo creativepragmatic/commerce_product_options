@@ -212,7 +212,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
               $default = $select_option['skuSegment'];
             }
             if (!empty($select_option['priceModifier'])) {
-              $modifier = ', +$' . money_format('%.2n', $select_option['priceModifier']);
+              $modifier = ', +$' . number_format($select_option['priceModifier'], 2);
               $title = $select_option['optionTitle'] . $modifier;
             }
             else {
