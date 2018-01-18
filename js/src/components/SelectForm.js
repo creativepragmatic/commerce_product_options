@@ -9,6 +9,7 @@ export class SelectForm extends Component {
     super(props);
     this.state = {
       title: '',
+      helpText: '',
       options: [],
       isRequired: false,
       newOption: {
@@ -84,6 +85,7 @@ export class SelectForm extends Component {
       product_id: document.getElementById('product-id').value,
       type: 'select',
       title: this.state.title,
+      helpText: this.state.helpText,
       options: this.state.options,
       required: this.state.isRequired
     };
@@ -122,6 +124,7 @@ console.log(error);
   clearAll() {
     this.setState({
       title: '',
+      helpText: '',
       options: [],
       newOption: {
         optionTitle: '',
@@ -147,6 +150,14 @@ console.log(error);
             type="text"
             required
             value={this.state.title}
+            onChange={this.handleInputChange} />
+        </label>
+        <label>Help text:<br/>
+          <textarea
+            name="helpText"
+            rows="2"
+            cols="20"
+            value={this.state.helpText}
             onChange={this.handleInputChange} />
         </label>
         <fieldset>

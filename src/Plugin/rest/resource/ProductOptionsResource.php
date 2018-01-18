@@ -203,6 +203,7 @@ class ProductOptionsResource extends ResourceBase {
       case 'ADD_SELECT':
         $field['type'] = $data['type'];
         $field['title'] = $data['title'];
+        $field['helpText'] = $data['helpText'];
         $field['options'] = $data['options'];
         $field['required'] = $data['required'];
         $options['fields'][] = $field;
