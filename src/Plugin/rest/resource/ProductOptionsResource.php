@@ -204,8 +204,9 @@ class ProductOptionsResource extends ResourceBase {
         $field['type'] = $data['type'];
         $field['title'] = $data['title'];
         $field['helpText'] = $data['helpText'];
-        $field['options'] = $data['options'];
+        $field['skuGeneration'] = $data['skuGeneration'];
         $field['required'] = $data['required'];
+        $field['options'] = $data['options'];
         $options['fields'][] = $field;
         $product->set('options', $options);
         $product->save();

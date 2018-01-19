@@ -43,19 +43,19 @@ console.log(error);
       })
       .catch(function (error) {
 console.log(error);
-      });   
+      });
   }
 
   generateVariations() {
     var allFields = [];
     var variations = [];
     store.getState().optionState.fields.forEach(function(field, index) {
-      if (field.type === 'select') {
+      if (field.type === 'select' && field.skuGeneration === true) {
         allFields.push(field);
       }
     });
 
-    var total = this.getTotalVariations(allFields);
+    var total = this.calculateTotalVariations(allFields);
     var treeMap = Array.apply(null, Array(allFields.length - 1)).map(Number.prototype.valueOf, 0);
     this.buildVariations(0, treeMap, allFields, total, variations);
     this.setState({
@@ -65,6 +65,7 @@ console.log(error);
 
   buildVariations(depth, map, allFields, total, variations = []) {
 
+    // If at root node of variation tree, add product base info
     if (depth === 0) {
       var variation = {
         title: '',
@@ -121,7 +122,7 @@ console.log(error);
 	}
   }
 
-  getTotalVariations(allFields) {
+  calculateTotalVariations(allFields) {
     var total = 1;
     allFields.forEach(function(field, index) {
       total = total * field.options.length;
@@ -161,7 +162,7 @@ console.log(error);
       })
       .catch(function (error) {
 console.log(error);
-      }); 
+      });
   }
 
   render() {

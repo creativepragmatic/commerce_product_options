@@ -10,8 +10,9 @@ export class SelectForm extends Component {
     this.state = {
       title: '',
       helpText: '',
-      options: [],
+      skuGeneration: true,
       isRequired: false,
+      options: [],
       newOption: {
         optionTitle: '',
         isDefault: false,
@@ -86,8 +87,9 @@ export class SelectForm extends Component {
       type: 'select',
       title: this.state.title,
       helpText: this.state.helpText,
-      options: this.state.options,
-      required: this.state.isRequired
+      required: this.state.isRequired,
+      skuGeneration: this.state.skuGeneration,
+      options: this.state.options
     };
 
     axios.get(Drupal.url('rest/session/token'))
@@ -125,14 +127,15 @@ console.log(error);
     this.setState({
       title: '',
       helpText: '',
+      skuGeneration: true,
+      isRequired: false,
       options: [],
       newOption: {
         optionTitle: '',
         isDefault: false,
         skuSegment: '',
         priceModifier: ''
-      },
-      isRequired: false
+      }
 	});
   }
 
@@ -160,6 +163,22 @@ console.log(error);
             value={this.state.helpText}
             onChange={this.handleInputChange} />
         </label>
+        <div>
+          <input
+            name="skuGeneration"
+            type="checkbox"
+            checked={this.state.skuGeneration}
+            onChange={this.handleInputChange} />
+          <span>&nbsp;Use for SKU generation?</span>
+        </div>
+        <div>
+          <input
+            name="isRequired"
+            type="checkbox"
+            checked={this.state.isRequired}
+            onChange={this.handleInputChange} />
+          <span>&nbsp;Required</span>
+        </div>
         <fieldset>
           <legend>Options</legend>
           <div id="select-option-container">
@@ -212,14 +231,6 @@ console.log(error);
           <button onClick={this.handleAddOption}>Add</button>
           <button onClick={this.handleClearOption}>Clear</button>
         </fieldset>
-        <div>
-          <input
-            name="isRequired"
-            type="checkbox"
-            checked={this.state.isRequired}
-            onChange={this.handleInputChange} />
-          <span>&nbsp;Required</span>
-        </div>
         <input type="submit" value="Save" />
         <button onClick={this.handleClearSelectAll}>Clear All</button>
       </form>
