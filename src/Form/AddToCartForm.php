@@ -222,8 +222,10 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
           }
 
           $form['options'][$machine_name_title]['#options'] = $select_options;
-          $form['options'][$machine_name_title]['#default_value'] = $default;
-          unset($default);
+          if (!empty($default)) {
+            $form['options'][$machine_name_title]['#default_value'] = $default;
+            unset($default);
+          }
           unset($select_options);
         }
       }
