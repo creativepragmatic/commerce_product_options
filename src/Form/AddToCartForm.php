@@ -182,8 +182,8 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     $form = parent::buildForm($form, $form_state);
 
     $product_id = $this->entity->getPurchasedEntity()->getProductId();
-    $product_storage = $this->entityManager->getStorage('commerce_product');
-    $product = $product_storage->load($product_id);
+    $storage  = $this->entityManager->getStorage('commerce_product');
+    $product = $storage ->load($product_id);
 
     if (!$product->get('options')->isEmpty()) {
       $options = $product->get('options')->getValue()[0]['fields'];

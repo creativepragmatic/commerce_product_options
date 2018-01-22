@@ -219,7 +219,7 @@ class ProductOptionsResource extends ResourceBase {
         foreach($data['variations'] as $variation) {
           $newVariation = ProductVariation::create([
             'type' => 'hpde_variation',
-            'title' => $title,
+            'title' => $variation['title'],
             'sku' => $variation['SKU'],
             'price' => new Price($variation['price'], 'USD'),
             'status' => 1,
