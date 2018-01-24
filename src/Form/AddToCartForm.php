@@ -201,7 +201,11 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
           '#title' => t($option['title']),
           '#required' => $option['required'] ? TRUE : FALSE,
         ];
- 
+
+        if (!empty($option['helpText'])) {
+          $form['options'][$machine_name_title]['#description'] = t($option['helpText']);
+        }
+
         if (!empty($option['size'])) {
           $form['options'][$machine_name_title]['#size'] = $option['size'];
         }
