@@ -202,6 +202,13 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
           '#required' => $option['required'] ? TRUE : FALSE,
         ];
 
+        if ($option['type'] === 'select') {
+          $sku_generation = !empty($option['skuGeneration']) ? 'Yes' : 'No';
+          $form['options'][$machine_name_title]['#attributes'] = [
+            'data-sku-generation' => [$sku_generation],
+          ];
+        }
+
         if (!empty($option['helpText'])) {
           $form['options'][$machine_name_title]['#description'] = t($option['helpText']);
         }
@@ -295,7 +302,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     $purchased_entity_sku = $form_state->getValue('base-sku');
     $all_fields = $form_state->getCompleteForm();
     foreach ($all_fields['options'] as $field) {
-      if ($field['#type'] === 'select') {
+      if ($field['#type'] === 'select' && $field['#attributes']['data-sku-generation'][0] === 'Yes') {
         $select_fields[] = $field['#name'];
         $purchased_entity_sku .= '-' . $selected_options[$field['#name']];
       }
