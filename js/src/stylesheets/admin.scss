@@ -10,10 +10,6 @@
   margin-right: 1rem;
 }
 
-#options-container {
-  display: flex;
-}
-
 #select-option-container {
   display: flex;
 }
@@ -22,12 +18,7 @@
   margin-right: 0.5rem;
 }
 
-#option-form-fields {
-  margin-right: 1rem;
-}
-
 #option-set-table {
-  margin-left: 0.5rem;
   width: auto;
 }
 
@@ -56,5 +47,17 @@
   .option-default {
     text-align: center;
     width: 4rem;
+  }
+}
+
+#option-form-fields {
+  #ul-add-fields {
+    display: inline-block;
+    list-style-type: none;
+    margin-left: 0;
+    padding-left: 0;
+    li {
+      display: inline;
+    }
   }
 }

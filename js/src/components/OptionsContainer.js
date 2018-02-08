@@ -10,9 +10,11 @@ export class OptionsContainer extends Component {
   render() {
     return (
       <div id="options-container">
+        <OptionSetTable />
         <Router>
           <div id="option-form-fields">
-            <ul>
+            <label>Add:&nbsp;</label>
+            <ul id="ul-add-fields">
               <li><Link to="/checkbox" activeclassname="selected">Checkbox</Link></li>
               <li><Link to="/select" activeclassname="selected">Select box</Link></li>
               <li><Link to="/text" activeclassname="selected">Text field</Link></li>
@@ -22,7 +24,6 @@ export class OptionsContainer extends Component {
             <Route path="/text" component={TextForm}/>
           </div>
         </Router>
-        <OptionSetTable />
       </div>
     );
   }

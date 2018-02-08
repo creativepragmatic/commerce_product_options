@@ -160,6 +160,7 @@ console.log(error);
     var variationData = {
       operation: 'UPDATE_PRODUCT_VARIATIONS',
       product_id: document.getElementById('product-id').value,
+      variation_type: document.getElementById('variation-type').value,
       variations: this.state.variations
     };
 

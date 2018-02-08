@@ -49,6 +49,8 @@ class ProductOptionsController extends ControllerBase {
       ->getStorage('commerce_product');
     $product = $storage->load($commerce_product);
 
+    $variations = $product->getVariations();
+
     $page['#attached']['library'][] = 'commerce_product_options/admin';
 
     $page['product-id'] = [
@@ -57,6 +59,14 @@ class ProductOptionsController extends ControllerBase {
         'id' => 'product-id',
       ],
       '#value' => $commerce_product,
+    ];
+
+    $page['variation-type'] = [
+      '#type' => 'hidden',
+      '#attributes' => [
+        'id' => 'variation-type',
+      ],
+      '#value' => $variations[0]->type->entity->id(),
     ];
 
     $page['product-title'] = [

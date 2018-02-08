@@ -3,11 +3,13 @@
 namespace Drupal\commerce_product_options\Plugin\rest\resource;
 
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_product\Entity\Product;
 use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
+use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -34,6 +36,13 @@ class ProductOptionsResource extends ResourceBase {
   protected $currentUser;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a new ProductOptionsResource object.
    *
    * @param array $configuration
@@ -48,6 +57,8 @@ class ProductOptionsResource extends ResourceBase {
    *   A logger instance.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   A current user instance.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
   public function __construct(
     array $configuration,
@@ -55,10 +66,12 @@ class ProductOptionsResource extends ResourceBase {
     $plugin_definition,
     array $serializer_formats,
     LoggerInterface $logger,
-    AccountProxyInterface $current_user) {
+    AccountProxyInterface $current_user,
+    EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -71,7 +84,8 @@ class ProductOptionsResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('commerce_product_options'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -214,20 +228,41 @@ class ProductOptionsResource extends ResourceBase {
         $response->setData($fields);
         return $response;
       case 'UPDATE_PRODUCT_VARIATIONS':
-        $title = $product->getTitle();
-        $newVariations = [];
-        foreach($data['variations'] as $variation) {
-          $newVariation = ProductVariation::create([
-            'type' => 'hpde_variation',
-            'title' => $variation['title'],
-            'sku' => $variation['SKU'],
-            'price' => new Price($variation['price'], 'USD'),
-            'status' => 1,
-          ]);
-          array_push($newVariations, $newVariation);
+        $new_variations = [];
+        $current_skus = [];
+        if ($product->hasVariations()) {
+          foreach ($product->getVariations() as $variation) {
+            $current_skus[] = $variation->getSku();
+            $variation->setActive(FALSE);
+            $variation->save();
+          }
         }
-        $product->setVariations($newVariations);
-        $product->save();
+        $user = User::load($this->currentUser->id());
+        foreach($data['variations'] as $variation) {
+          if (in_array($variation['SKU'], $current_skus)) {
+            $storage = $this->entityTypeManager
+              ->getStorage('commerce_product_variation');
+            $variation_array = $storage->loadByProperties(['sku' => $variation['SKU']]);
+            $variation_entity = array_pop($variation_array);
+            $variation_entity->setPrice(new Price($variation['price'], 'USD'));
+            $variation_entity->setActive(TRUE);
+            $variation_entity->setOwner($user);
+            $variation_entity->save();
+          }
+          else {
+            $new_variation = ProductVariation::create([
+              'type' => $data['variation_type'],
+              'product_id' => $product_id,
+              'sku' => $variation['SKU'],
+              'title' => $variation['title'],
+              'price' => new Price($variation['price'], 'USD'),
+              'status' => 1,
+            ]);
+            $new_variation->setOwner($user);
+            $product->addVariation($new_variation);
+            $product->save();
+          }
+        }
         $response->setData(TRUE);
         return $response;
     }
