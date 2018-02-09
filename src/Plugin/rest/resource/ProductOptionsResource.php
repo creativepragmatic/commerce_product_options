@@ -118,7 +118,7 @@ class ProductOptionsResource extends ResourceBase {
     }
 
     $base_sku = !empty($options['base_sku']) ? $options['base_sku'] : '';
-    $base_price = !empty($options['base_price']) ? $options['base_price'] : '';
+    $base_price = !empty($options['base_price']) ? $options['base_price'] : 0;
 
     if (!empty($options['fields'])) {
       $fields = $options['fields'];
