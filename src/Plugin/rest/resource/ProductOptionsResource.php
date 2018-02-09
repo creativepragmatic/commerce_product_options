@@ -244,7 +244,7 @@ class ProductOptionsResource extends ResourceBase {
               ->getStorage('commerce_product_variation');
             $variation_array = $storage->loadByProperties(['sku' => $variation['SKU']]);
             $variation_entity = array_pop($variation_array);
-            $variation_entity->setPrice(new Price($variation['price'], 'USD'));
+            $variation_entity->setPrice(new Price(strval($variation['price']), 'USD'));
             $variation_entity->setActive(TRUE);
             $variation_entity->setOwner($user);
             $variation_entity->save();
@@ -255,7 +255,7 @@ class ProductOptionsResource extends ResourceBase {
               'product_id' => $product_id,
               'sku' => $variation['SKU'],
               'title' => $variation['title'],
-              'price' => new Price($variation['price'], 'USD'),
+              'price' => new Price(strval($variation['price']), 'USD'),
               'status' => 1,
             ]);
             $new_variation->setOwner($user);
