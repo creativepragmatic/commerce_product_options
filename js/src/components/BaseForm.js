@@ -79,7 +79,7 @@ console.log(error);
       .then(function (csrfToken) {
         axios({
           method: 'PATCH',
-          url: Drupal.url('commerce_product_option') + '/' + baseData.product_id,
+          url: Drupal.url('commerce_product_option') + '/' + baseData.product_id + '?_format=json',
           data: JSON.stringify(baseData),
           headers: {
             'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ console.log(error);
           store.dispatch(action);
         })
         .catch(function (error) {
-console.log(error);
+console.log(error.message);
         });
       })
       .catch(function (error) {

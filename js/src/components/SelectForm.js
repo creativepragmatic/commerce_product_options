@@ -99,7 +99,7 @@ export class SelectForm extends Component {
       .then(function (csrfToken) {
         axios({
           method: 'PATCH',
-          url: Drupal.url('commerce_product_option') + '/' + selectData.product_id,
+          url: Drupal.url('commerce_product_option') + '/' + selectData.product_id + '?_format=json',
           data: JSON.stringify(selectData),
           headers: {
             'Content-Type': 'application/json',

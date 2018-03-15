@@ -46,7 +46,7 @@ export class CheckboxForm extends Component {
       .then(function (csrfToken) {
         axios({
           method: 'PATCH',
-          url: Drupal.url('commerce_product_option') + '/' + checkboxData.product_id,
+          url: Drupal.url('commerce_product_option') + '/' + checkboxData.product_id + '?_format=json',
           data: JSON.stringify(checkboxData),
           headers: {
             'Content-Type': 'application/json',

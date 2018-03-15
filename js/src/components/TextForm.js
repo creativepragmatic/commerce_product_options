@@ -50,7 +50,7 @@ export class TextForm extends Component {
       .then(function (csrfToken) {
         axios({
           method: 'PATCH',
-          url: Drupal.url('commerce_product_option') + '/' + textFieldData.product_id,
+          url: Drupal.url('commerce_product_option') + '/' + textFieldData.product_id + '?_format=json',
           data: JSON.stringify(textFieldData),
           headers: {
             'Content-Type': 'application/json',

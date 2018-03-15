@@ -29,19 +29,3 @@ export class OptionSetRow extends Component {
     );
   }
 }
-
-      /*
-      {isLoggedIn ? (
-        <LogoutButton onClick={this.handleLogoutClick} />
-      ) : (
-        <LoginButton onClick={this.handleLoginClick} />
-      )}
-
-      { this.props.loggedIn ?
-          <span>
-            <h2>{ `Welcome Back ${ this.props.name }` }</h2>
-              <p>You can visit settings to reset your password</p>
-          </span>
-          :
-          <h2>Hey man! Log in to see this section</h2>
-      }*/

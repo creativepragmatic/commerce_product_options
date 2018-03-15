@@ -171,7 +171,7 @@ console.log(error);
       .then(function (csrfToken) {
         axios({
           method: 'PATCH',
-          url: Drupal.url('commerce_product_option') + '/' + variationData.product_id,
+          url: Drupal.url('commerce_product_option') + '/' + variationData.product_id + '?_format=json',
           data: JSON.stringify(variationData),
           headers: {
             'Content-Type': 'application/json',
