@@ -72,7 +72,8 @@ function commerce_product_options_entity_operation_alter(array &$operations, Ent
  * Implements hook_ENTITY_TYPE_view_alter().
  */
 function commerce_product_options_commerce_order_view_alter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
-  $build['order_items']['#name'] = 'commerce_product_options_order_item_table';
+  $build['order_items']['#formatter'] = 'commerce_product_options_order_item_table';
+  $build['order_items'][0]['#name'] = 'commerce_product_options_order_item_table';
 }
 
 /**
