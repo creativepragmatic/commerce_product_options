@@ -50,16 +50,32 @@ console.log(error);
     var allFields = [];
     var treeMap = [];
     var variations = [];
-    store.getState().optionState.fields.forEach(function(field, index) {
-      if (field.type === 'select' && field.skuGeneration === true) {
-        allFields.push(field);
-      }
-    });
 
-    var total = this.calculateTotalVariations(allFields);
-    var numFields = allFields.length === 0 ? 0 : allFields.length - 1;
-    treeMap = Array.apply(null, Array(numFields)).map(Number.prototype.valueOf, 0);
-    this.buildVariations(0, treeMap, allFields, total, variations);
+    if (store.getState().baseVariationState.skuGeneration === 'byOption') {
+      store.getState().optionState.fields.forEach(function(field, index) {
+        if (field.skuGeneration === true) {
+          let sku = store.getState().baseVariationState.baseSKU + '-' + field.skuSegment;
+          let variation = {
+            title: document.getElementById('product-title').value + ' (' + sku + ')',
+            SKU: sku,
+            price: parseFloat(store.getState().baseVariationState.basePrice) + parseFloat(field.priceModifier)
+          };
+          variations.push(variation);
+        }
+      });
+    }
+    else if (store.getState().baseVariationState.skuGeneration === 'bySegment') {
+      store.getState().optionState.fields.forEach(function(field, index) {
+        if (field.type === 'select' && field.skuGeneration === true) {
+          allFields.push(field);
+        }
+      });
+      var total = this.calculateTotalVariations(allFields);
+      var numFields = allFields.length === 0 ? 0 : allFields.length - 1;
+      treeMap = Array.apply(null, Array(numFields)).map(Number.prototype.valueOf, 0);
+      this.buildVariations(0, treeMap, allFields, total, variations);
+    }
+
     this.setState({
       variations: variations
     });

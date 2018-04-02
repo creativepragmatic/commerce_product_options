@@ -219,10 +219,17 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
     if (!$product->get('options')->isEmpty()) {
       $options = $product->get('options')->getValue()[0]['fields'];
-    
+      $base_sku = $product->get('options')->getValue()[0]['base_sku'];
+      $sku_generation = $product->get('options')->getValue()[0]['sku_generation'];
+
       $form['base-sku'] = [
         '#type' => 'hidden',
-        '#value' => $product->get('options')->getValue()[0]['base_sku'],
+        '#value' => $base_sku,
+      ];
+
+      $form['sku-generation'] = [
+        '#type' => 'hidden',
+        '#value' => $sku_generation,
       ];
 
       foreach ($options as $option) {
@@ -233,6 +240,25 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
           '#title' => t($option['title']),
           '#required' => $option['required'] ? TRUE : FALSE,
         ];
+
+        if ($option['type'] === 'checkbox') {
+          if ($option['mandatoryOption']) {
+            $form['options'][$machine_name_title]['#default_value'] = TRUE;
+            $form['options'][$machine_name_title]['#disabled'] = TRUE;
+          }
+
+          if (!empty($option['priceModifier'])) {
+            $title = $option['title'] . ' +$' . number_format($option['priceModifier'], 2);
+            $form['options'][$machine_name_title]['#title'] = t($title);
+          }
+
+          if ($sku_generation === 'byOption' && !empty($option['skuGeneration'])) {
+            $form['options'][$machine_name_title]['#attributes'] = [
+              'data-sku-generation' => 1,
+              'data-sku' => $base_sku . '-' . $option['skuSegment'],
+            ];
+          }
+        }
 
         if ($option['type'] === 'select') {
           $sku_generation = !empty($option['skuGeneration']) ? 'Yes' : 'No';
@@ -302,22 +328,66 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
+
     /** @var \Drupal\commerce_order\Entity\OrderItemInterface $order_item */
     $order_item = $this->entity;
 
     $options = $this->buildOptions($form_state);
     $order_item->setData('product_option', $options);
 
-    /** @var \Drupal\commerce\PurchasableEntityInterface $purchased_entity */
-    $purchased_entity = $order_item->getPurchasedEntity();
+    if ($form_state->getValue('sku-generation') === 'bySegment') {
 
-    $order_type_id = $this->orderTypeResolver->resolve($order_item);
-    $store = $this->selectStore($purchased_entity);
-    $cart = $this->cartProvider->getCart($order_type_id, $store);
-    if (!$cart) {
-      $cart = $this->cartProvider->createCart($order_type_id, $store);
+      /** @var \Drupal\commerce\PurchasableEntityInterface $purchased_entity */
+      $purchased_entity = $order_item->getPurchasedEntity();
+
+      $order_type_id = $this->orderTypeResolver->resolve($order_item);
+      $store = $this->selectStore($purchased_entity);
+      $cart = $this->cartProvider->getCart($order_type_id, $store);
+      if (!$cart) {
+        $cart = $this->cartProvider->createCart($order_type_id, $store);
+      }
+
+      $this->cartManager->addOrderItem($cart, $order_item, $form_state->get(['settings', 'combine']));
     }
-    $this->cartManager->addOrderItem($cart, $order_item, $form_state->get(['settings', 'combine']));
+    else if ($form_state->getValue('sku-generation') === 'byOption') {
+
+      $all_fields = $form_state->getCompleteForm();
+      foreach ($all_fields['options'] as $field) {
+        if (is_array($field) && $field['#attributes']['data-sku-generation'] && $field['#checked']) {
+          $storage = $this->entityTypeManager
+            ->getStorage('commerce_product_variation');
+          $entity_id = $storage
+            ->getQuery()
+            ->condition('sku', $field['#attributes']['data-sku'])
+            ->execute();
+          $purchased_entity = $storage->load(reset($entity_id));
+
+          $store = $this->selectStore($purchased_entity);
+          $order_item = $this->cartManager->createOrderItem($purchased_entity);
+          $order_item->setData('product_option', $options);
+          $order_type_id = $this->orderTypeResolver->resolve($order_item);
+          $cart = $this->cartProvider->getCart($order_type_id, $store);
+          if (!$cart) {
+            $cart = $this->cartProvider->createCart($order_type_id, $store);
+          }
+
+          $this->cartManager->addOrderItem($cart, $order_item, TRUE, TRUE);
+        }
+      }
+    }
+    else {
+      /** @var \Drupal\commerce\PurchasableEntityInterface $purchased_entity */
+      $purchased_entity = $order_item->getPurchasedEntity();
+
+      $order_type_id = $this->orderTypeResolver->resolve($order_item);
+      $store = $this->selectStore($purchased_entity);
+      $cart = $this->cartProvider->getCart($order_type_id, $store);
+      if (!$cart) {
+        $cart = $this->cartProvider->createCart($order_type_id, $store);
+      }
+      $this->entity = $this->cartManager->addOrderItem($cart, $order_item, $form_state->get(['settings', 'combine']));
+    }
+
     // Other submit handlers might need the cart ID.
     $form_state->set('cart_id', $cart->id());
   }
@@ -329,38 +399,41 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     /** @var \Drupal\commerce_order\Entity\OrderItemInterface $entity */
     $entity = parent::buildEntity($form, $form_state);
 
-    $select_fields = [];
-    $selected_options = $form_state->getValues();
-    $purchased_entity_sku = $form_state->getValue('base-sku');
-    $all_fields = $form_state->getCompleteForm();
-    foreach ($all_fields['options'] as $field) {
-      if ($field['#type'] === 'select' && $field['#attributes']['data-sku-generation'][0] === 'Yes') {
-        $select_fields[] = $field['#name'];
-        $purchased_entity_sku .= '-' . $selected_options[$field['#name']];
+    if ($form_state->getValue('sku-generation') === 'bySegment') {
+
+      $select_fields = [];
+      $selected_options = $form_state->getValues();
+      $purchased_entity_sku = $form_state->getValue('base-sku');
+      $all_fields = $form_state->getCompleteForm();
+      foreach ($all_fields['options'] as $field) {
+        if ($field['#type'] === 'select' && $field['#attributes']['data-sku-generation'][0] === 'Yes') {
+          $select_fields[] = $field['#name'];
+          $purchased_entity_sku .= '-' . $selected_options[$field['#name']];
+        }
       }
-    }
 
-    if (!empty($select_fields) > 0) {
-      $storage = $this->entityTypeManager
-        ->getStorage('commerce_product_variation');
-      $entity_id = $storage
-        ->getQuery()
-        ->condition('sku', $purchased_entity_sku)
-        ->execute();
-      $purchased_entity = $storage->load(reset($entity_id));
-      $entity->set('purchased_entity', $purchased_entity);
-    }
-    else {
-      $purchased_entity = $entity->getPurchasedEntity();
-    }
+      if (!empty($select_fields) > 0) {
+        $storage = $this->entityTypeManager
+          ->getStorage('commerce_product_variation');
+        $entity_id = $storage
+          ->getQuery()
+          ->condition('sku', $purchased_entity_sku)
+          ->execute();
+        $purchased_entity = $storage->load(reset($entity_id));
+        $entity->set('purchased_entity', $purchased_entity);
+      }
+      else {
+        $purchased_entity = $entity->getPurchasedEntity();
+      }
 
-    // Now that the purchased entity is set, populate the title and price.
-    $entity->setTitle($purchased_entity->getOrderItemTitle());
-    if (!$entity->isUnitPriceOverridden()) {
-      $store = $this->selectStore($purchased_entity);
-      $context = new Context($this->currentUser, $store);
-      $resolved_price = $this->chainPriceResolver->resolve($purchased_entity, $entity->getQuantity(), $context);
-      $entity->setUnitPrice($resolved_price);
+      // Now that the purchased entity is set, populate the title and price.
+      $entity->setTitle($purchased_entity->getOrderItemTitle());
+      if (!$entity->isUnitPriceOverridden()) {
+        $store = $this->selectStore($purchased_entity);
+        $context = new Context($this->currentUser, $store);
+        $resolved_price = $this->chainPriceResolver->resolve($purchased_entity, $entity->getQuantity(), $context);
+        $entity->setUnitPrice($resolved_price);
+      }
     }
 
     return $entity;
@@ -419,7 +492,10 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
             $options[$title] = $field['#value'];
             break;
           case 'checkbox':
-            $options[$title] = $field['#value'] ? 'Yes': 'No';
+            if ($form_state->getValue('sku-generation') === 'bySegment' ||
+                 ($form_state->getValue('sku-generation') === 'byOption' && empty($field['#attributes']['data-sku-generation']))) {
+              $options[$title] = $field['#value'] ? 'Yes': 'No';
+            }
             break;
         }
       }

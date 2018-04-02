@@ -9,6 +9,10 @@ export class CheckboxForm extends Component {
     super(props);
     this.state = {
       checkboxTitle: '',
+      skuSegment: '',
+      priceModifier: '',
+      skuGeneration: false,
+      mandatoryOption: false,
       isRequired: false
     };
 
@@ -36,6 +40,10 @@ export class CheckboxForm extends Component {
       product_id: document.getElementById('product-id').value,
       type: 'checkbox',
       title: this.state.checkboxTitle,
+      skuSegment: this.state.skuSegment,
+      priceModifier: this.state.priceModifier,
+      skuGeneration: this.state.skuGeneration,
+      mandatory: this.state.mandatoryOption,
       required: this.state.isRequired
     };
 
@@ -73,6 +81,10 @@ console.log(error);
   clear() {
     this.setState({
       checkboxTitle: '',
+      skuSegment: '',
+      priceModifier: '',
+      skuGeneration: false,
+      mandatoryOption: false,
       isRequired: false
     });
   }
@@ -96,14 +108,41 @@ console.log(error);
             value={this.state.checkboxTitle}
             onChange={this.handleInputChange} />
         </label>
-        <div>
+        <label>SKU segment:<br/>
           <input
-            name="isRequired"
-            type="checkbox"
-            checked={this.state.isRequired}
+            name="skuSegment"
+            type="text"
+            size="8"
+            value={this.state.skuSegment}
             onChange={this.handleInputChange} />
-          <span>&nbsp;Required</span>
-        </div>
+        </label>
+        <label>Price modifier:<br/>
+          <input
+            name="priceModifier"
+            type="text"
+            size="6"
+            maxLength="6"
+            value={this.state.priceModifier}
+            onChange={this.handleInputChange} />
+        </label>
+        <input
+          name="skuGeneration"
+          type="checkbox"
+          checked={this.state.skuGeneration}
+          onChange={this.handleInputChange} />
+        <span>&nbsp;Use for SKU generation?</span><br/>
+        <input
+          name="mandatoryOption"
+          type="checkbox"
+          checked={this.state.mandatoryOption}
+          onChange={this.handleInputChange} />
+        <span>&nbsp;Mandatory option?</span><br/>
+        <input
+          name="isRequired"
+          type="checkbox"
+          checked={this.state.isRequired}
+          onChange={this.handleInputChange} />
+        <span>&nbsp;Required</span><br/>
         <input type="submit" value="Save" />
         <button onClick={this.handleClear}>Clear</button>
       </form>

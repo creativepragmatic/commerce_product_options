@@ -119,6 +119,7 @@ class ProductOptionsResource extends ResourceBase {
 
     $base_sku = !empty($options['base_sku']) ? $options['base_sku'] : '';
     $base_price = !empty($options['base_price']) ? $options['base_price'] : 0;
+    $sku_generation = !empty($options['sku_generation']) ? $options['sku_generation'] : 'byOption';
 
     if (!empty($options['fields'])) {
       $fields = $options['fields'];
@@ -129,6 +130,7 @@ class ProductOptionsResource extends ResourceBase {
     $response->setData([
       'base_sku' => $base_sku,
       'base_price' => $base_price,
+      'sku_generation' => $sku_generation,
       'fields' => $fields
     ]);
 
@@ -185,11 +187,13 @@ class ProductOptionsResource extends ResourceBase {
       case 'UPDATE_BASE_FIELDS':
         $options['base_sku'] = $data['base_sku'];
         $options['base_price'] = $data['base_price'];
+        $options['sku_generation'] = $data['sku_generation'];
         $product->set('options', $options);
         $product->save();
         $response->setData([
           'base_sku' => $data['base_sku'],
-          'base_price' => $data['base_price']
+          'base_price' => $data['base_price'],
+          'sku_generation' => $data['sku_generation']
         ]);
         return $response;
       case 'ADD_TEXT_FIELD':
@@ -207,6 +211,10 @@ class ProductOptionsResource extends ResourceBase {
       case 'ADD_CHECKBOX':
         $field['type'] = $data['type'];
         $field['title'] = $data['title'];
+        $field['skuSegment'] = $data['skuSegment'];
+        $field['priceModifier'] = $data['priceModifier'];
+        $field['skuGeneration'] = $data['skuGeneration'];
+        $field['mandatoryOption'] = $data['mandatory'];
         $field['required'] = $data['required'];
         $options['fields'][] = $field;
         $product->set('options', $options);

@@ -53,9 +53,12 @@ console.log(error);
         rowType="field-row"
         title={field.title}
         size={field.size}
+        skuSegment={field.skuSegment}
+        priceModifier={field.priceModifier}
         required={field.required ? 'YES' : 'NO'}
-        type={field.type} />);
-      
+        type={field.type}
+        skuGeneration={field.skuGeneration === true ? true : false} />);
+
       if (field.hasOwnProperty('options') && field.options.length > 0) {
         field.options.forEach(function(option, optionIndex) {
           rowBuffer.push(<OptionSetRow
@@ -82,9 +85,9 @@ console.log(error);
         <thead>
           <tr>
             <th>Title</th>
+            <th>Default</th>
             <th>SKU Segment</th>
             <th>Price Modifier</th>
-            <th>Default</th>
             <th>Size</th>
             <th>Required</th>
             <th>Type</th>

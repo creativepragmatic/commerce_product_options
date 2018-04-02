@@ -8,6 +8,18 @@
 
 #base-form {
   margin-right: 1rem;
+  #by-segment,
+  #by-option {
+    margin-left: 0.5rem;
+  }
+  #by-segment-label,
+  #by-option-label {
+    display: inline-block;
+    bottom: 2px;
+    left: 4px;
+    font-weight: normal;
+    position: relative;
+  }
 }
 
 #select-option-container {

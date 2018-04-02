@@ -9,12 +9,14 @@ export class BaseForm extends Component {
     super(props);
     this.state = {
       baseSKU: store.getState().baseVariationState.baseSKU,
-      basePrice: store.getState().baseVariationState.basePrice
+      basePrice: store.getState().baseVariationState.basePrice,
+      skuGeneration: store.getState().baseVariationState.skuGeneration
     };
 
     store.subscribe(() => this.setState({
       baseSKU: store.getState().baseVariationState.baseSKU,
-      basePrice: store.getState().baseVariationState.basePrice
+      basePrice: store.getState().baseVariationState.basePrice,
+      skuGeneration: store.getState().baseVariationState.skuGeneration
     }));
 
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -39,7 +41,8 @@ export class BaseForm extends Component {
           var action = {
             type: types.GET_BASE_INFO_SUCCESS,
             baseSKU: response.data.base_sku,
-            basePrice: response.data.base_price
+            basePrice: response.data.base_price,
+            skuGeneration: response.data.sku_generation
           };
           store.dispatch(action);
         })
@@ -53,9 +56,8 @@ console.log(error);
   }
 
   handleInputChange(event) {
-    const target = event.target;
-    const value = target.type === 'checkbox' ? target.checked : target.value;
-    const name = target.name;
+    let value = event.target.value;
+    let name = event.target.name;
 
     this.setState({
       [name]: value
@@ -69,7 +71,8 @@ console.log(error);
       operation: 'UPDATE_BASE_FIELDS',
       product_id: document.getElementById('product-id').value,
       base_sku: this.state.baseSKU,
-      base_price: this.state.basePrice
+      base_price: this.state.basePrice,
+      sku_generation: this.state.skuGeneration
     };
 
     axios.get(Drupal.url('rest/session/token'))
@@ -90,7 +93,8 @@ console.log(error);
           var action = {
             type: types.UPDATE_BASE_INFO_SUCCESS,
             baseSKU: response.data.base_sku,
-            basePrice: response.data.base_price
+            basePrice: response.data.base_price,
+            skuGeneration: response.data.sku_generation
           };
           store.dispatch(action);
         })
@@ -124,6 +128,24 @@ console.log(error);
             required
             value={this.state.basePrice}
             onChange={this.handleInputChange} />
+        </label>
+        <label>SKU Generation: <span className="required-asterisk">*</span><br/>
+          <input
+            id="by-option"
+            name="skuGeneration"
+            type="radio"
+            value="byOption"
+            onChange={this.handleInputChange}
+            checked={this.state.skuGeneration === 'byOption'} />
+          <label id="by-option-label" for="by-option">By option</label><br/>
+          <input
+            id="by-segment"
+            name="skuGeneration"
+            type="radio"
+            value="bySegment"
+            onChange={this.handleInputChange}
+            checked={this.state.skuGeneration === 'bySegment'} />
+          <label id="by-segment-label" for="by-segment">By option segment</label>
         </label>
         <input type="submit" value="Save" />
       </form>
