@@ -347,7 +347,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
         $cart = $this->cartProvider->createCart($order_type_id, $store);
       }
 
-      $this->cartManager->addOrderItem($cart, $order_item, $form_state->get(['settings', 'combine']));
+      $this->cartManager->addOrderItem($cart, $order_item, FALSE, TRUE);
     }
     else if ($form_state->getValue('sku-generation') === 'byOption') {
 
@@ -371,7 +371,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
             $cart = $this->cartProvider->createCart($order_type_id, $store);
           }
 
-          $this->cartManager->addOrderItem($cart, $order_item, TRUE, TRUE);
+          $this->cartManager->addOrderItem($cart, $order_item, FALSE, TRUE);
         }
       }
     }
