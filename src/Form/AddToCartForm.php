@@ -364,6 +364,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
           $store = $this->selectStore($purchased_entity);
           $order_item = $this->cartManager->createOrderItem($purchased_entity);
+          $options['Option'] = $field['#title']->getUntranslatedString();
           $order_item->setData('product_option', $options);
           $order_type_id = $this->orderTypeResolver->resolve($order_item);
           $cart = $this->cartProvider->getCart($order_type_id, $store);
