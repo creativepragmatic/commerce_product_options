@@ -390,7 +390,12 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     }
 
     // Other submit handlers might need the cart ID.
-    $form_state->set('cart_id', $cart->id());
+    if (empty($cart)) {
+      drupal_set_message(t('You have not selected any products to add to your shopping cart.'), 'error');
+    }
+    else {
+      $form_state->set('cart_id', $cart->id());
+    }
   }
 
   /**
