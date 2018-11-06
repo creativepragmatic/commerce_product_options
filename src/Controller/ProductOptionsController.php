@@ -49,7 +49,8 @@ class ProductOptionsController extends ControllerBase {
       ->getStorage('commerce_product');
     $product = $storage->load($commerce_product);
 
-    $variations = $product->getVariations();
+    $field = $product->getFieldDefinitions();
+    $setting = $field['variations']->getSetting('handler_settings');
 
     $page['#attached']['library'][] = 'commerce_product_options/admin';
 
@@ -66,7 +67,7 @@ class ProductOptionsController extends ControllerBase {
       '#attributes' => [
         'id' => 'variation-type',
       ],
-      '#value' => $variations[0]->type->entity->id(),
+      '#value' => $setting['target_bundles'][0],
     ];
 
     $page['product-title'] = [

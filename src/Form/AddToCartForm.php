@@ -412,7 +412,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
       $purchased_entity_sku = $form_state->getValue('base-sku');
       $all_fields = $form_state->getCompleteForm();
       foreach ($all_fields['options'] as $field) {
-        if ($field['#type'] === 'select' && $field['#attributes']['data-sku-generation'][0] === 'Yes') {
+        if (isset($field['#type']) && $field['#type'] === 'select' && $field['#attributes']['data-sku-generation'][0] === 'Yes') {
           $select_fields[] = $field['#name'];
           $purchased_entity_sku .= '-' . $selected_options[$field['#name']];
         }
@@ -488,7 +488,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     $field_keys = array_intersect_key($form_state->getValues(), $all_fields['options']);
 
     foreach ($all_fields['options'] as $field) {
-      if (array_key_exists($field['#name'], $field_keys)) {
+      if (isset($field['#name']) && array_key_exists($field['#name'], $field_keys)) {
         $title = $field['#title']->getUntranslatedString();
         switch ($field['#type']) {
           case 'select':
