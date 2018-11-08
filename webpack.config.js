@@ -1,69 +1,33 @@
-// We are using node's native package 'path' https://nodejs.org/api/path.html
+// webpack v4
 const path = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
-var webpack = require("webpack");
-
-// Constant with our paths
-const paths = {
-  DIST: path.resolve(__dirname, 'js/dist'),
-  JS: path.resolve(__dirname, 'js/src'),
-};
-
-// Webpack configuration
 module.exports = {
-  entry: path.join(paths.JS, 'app.js'),
+  entry: { main: './js/src/app.js' },
   output: {
-    path: paths.DIST,
+    path: path.resolve(__dirname, 'js/dist'),
     filename: 'bundle.js'
   },
-  // Loaders configuration
-  // We are telling webpack to use "babel-loader" for .js and .jsx files
   module: {
     rules: [
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader',
-        options: {
-          presets: ['react', 'es2015']
+        use: {
+          loader: "babel-loader"
         }
       },
       {
-        test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          'autoprefixer-loader'
-        ]
-      },
-      {
         test: /\.scss$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          'autoprefixer-loader',
-          'sass-loader'
-        ]
+        use: ['style-loader', MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'sass-loader']
       }
-    ],
-  },
-  // Enable importing JS files without specifying their's extenstion
-  //
-  // So we can write:
-  // import MyComponent from './my-component';
-  //
-  // Instead of:
-  // import MyComponent from './my-component.jsx';
-  resolve: {
-    extensions: ['.js', '.jsx'],
+    ]
   },
   plugins: [
-    new webpack.optimize.UglifyJsPlugin({
-      minimize: true,
-      compress: false
+    new CleanWebpackPlugin('js/dist', {}),
+    new MiniCssExtractPlugin({
+      filename: './admin.css',
     }),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
-    })
   ]
 };

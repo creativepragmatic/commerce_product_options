@@ -9,3 +9,5 @@ render(
   <Provider store={store}>{router}</Provider>,
   document.getElementById('product-options-admin')
 );
+
+console.log("Hello, world!");
