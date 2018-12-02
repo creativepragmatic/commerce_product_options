@@ -27,7 +27,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin('js/dist', {}),
     new MiniCssExtractPlugin({
-      filename: './admin.css',
+      filename: 'js/admin.css',
     }),
   ]
 };

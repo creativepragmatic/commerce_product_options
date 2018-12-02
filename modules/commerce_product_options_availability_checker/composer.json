@@ -1,0 +1,14 @@
+{
+  "name": "drupal/commerce_product_options_availability_checker",
+  "type": "drupal-module",
+  "description": "On options product Add to Cart forms, dynamically checks stock level for availability.",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://www.drupal.org/project/commerce_product_options_availability_checker",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/commerce_product_options_availability_checker",
+    "source": "http://cgit.drupalcode.org/commerce_product_options_availability_checker"
+  },
+  "require": { }
+}

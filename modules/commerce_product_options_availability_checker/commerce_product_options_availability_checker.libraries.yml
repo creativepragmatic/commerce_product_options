@@ -1,0 +1,7 @@
+availability_checker:
+  version: VERSION
+  js:
+    js/availability-checker.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.once

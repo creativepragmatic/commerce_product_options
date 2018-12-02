@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_product_options\Plugin\rest\resource;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\commerce_price\Price;
@@ -105,6 +106,9 @@ class ProductOptionsResource extends ResourceBase {
    */
   public function get($product_id) {
 
+    $disable_cache = new CacheableMetadata();
+    $disable_cache->setCacheMaxAge(0);
+
     if (!$this->currentUser->hasPermission('administer commerce_product')) {
       throw new AccessDeniedHttpException();
     }
@@ -133,6 +137,8 @@ class ProductOptionsResource extends ResourceBase {
       'sku_generation' => $sku_generation,
       'fields' => $fields
     ]);
+
+    $response->addCacheableDependency($disable_cache);
 
     return $response;
   }

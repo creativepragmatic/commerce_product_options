@@ -1,0 +1,31 @@
+<?php
+
+/**
+ * @file
+ * Contains commerce_product_options_availability_checker.module.
+ */
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function commerce_product_options_availability_checker_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the commerce_product_options_availability_checker module.
+    case 'help.page.commerce_product_options_availability_checker':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('On options product Add to Cart forms, dynamically checks stock level for availability.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+function commerce_product_options_availability_checker_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+
+  if (strpos($form_id, 'commerce_order_item_add_to_cart_form_commerce_product') === 0 && !empty($form['options'])) {
+    $form['#attached']['library'][] = 'commerce_product_options_availability_checker/availability_checker';
+  }
+}

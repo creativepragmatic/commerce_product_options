@@ -225,11 +225,17 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
       $form['base-sku'] = [
         '#type' => 'hidden',
         '#value' => $base_sku,
+        '#attributes' => [
+          'id' => 'base-sku',
+        ],
       ];
 
       $form['sku-generation'] = [
         '#type' => 'hidden',
         '#value' => $sku_generation,
+        '#attributes' => [
+          'id' => 'sku-generation',
+        ],
       ];
 
       foreach ($options as $option) {
