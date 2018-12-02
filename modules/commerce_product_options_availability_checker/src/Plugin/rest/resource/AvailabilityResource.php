@@ -108,7 +108,7 @@ class AvailabilityResource extends ResourceBase {
         $manager = \Drupal::service('commerce_stock.service_manager');
         $level = intval($manager->getStockLevel(current($variation)));
 
-        if ($level === 0) {
+        if ($level < 1) {
           return (new ResourceResponse('SOLD OUT', 200))->addCacheableDependency($disable_cache);
         }
         else if ($level > 0 && $level < 10) {
