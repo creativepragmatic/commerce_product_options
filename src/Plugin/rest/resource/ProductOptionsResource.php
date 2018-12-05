@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_product_options\Plugin\rest\resource;
 
+use Drupal\Core\Cache\CacheableJsonResponse;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -98,7 +99,7 @@ class ProductOptionsResource extends ResourceBase {
    * @param int $product_id
    *   The entity if of the product.
    *
-   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   * @return \Drupal\Core\Cache\CacheableJsonResponse
    *   The JSON response containing product options.
    * 
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
@@ -106,15 +107,15 @@ class ProductOptionsResource extends ResourceBase {
    */
   public function get($product_id) {
 
-    $disable_cache = new CacheableMetadata();
-    $disable_cache->setCacheMaxAge(0);
-
     if (!$this->currentUser->hasPermission('administer commerce_product')) {
       throw new AccessDeniedHttpException();
     }
 
     $options = [];
-    $response = new JsonResponse();
+    $disable_cache = new CacheableMetadata();
+    $disable_cache->setCacheMaxAge(0);
+    $response = new CacheableJsonResponse();
+    $response->addCacheableDependency($disable_cache);
 
     $product = Product::load($product_id);
     if (!$product->get('options')->isEmpty()) {
@@ -137,8 +138,6 @@ class ProductOptionsResource extends ResourceBase {
       'sku_generation' => $sku_generation,
       'fields' => $fields
     ]);
-
-    $response->addCacheableDependency($disable_cache);
 
     return $response;
   }

@@ -19,15 +19,16 @@ module.exports = {
         }
       },
       {
-        test: /\.scss$/,
-        use: ['style-loader', MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'sass-loader']
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          'css-loader',
+          'sass-loader'
+        ]
       }
     ]
   },
   plugins: [
-    new CleanWebpackPlugin('js/dist', {}),
-    new MiniCssExtractPlugin({
-      filename: 'js/admin.css',
-    }),
+    new CleanWebpackPlugin('js/dist', {})
   ]
 };
