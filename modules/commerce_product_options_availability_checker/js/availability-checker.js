@@ -54,6 +54,7 @@
               else {
                 $('#edit-submit').prop('value', 'Add to cart');
                 $('#edit-submit').prop('disabled', false);
+                $('#strong-limited').remove();
                 $('#edit-actions').after('<p id="strong-limited" style="text-align: center; margin-bottom: 0.75rem;">' + data + '</p>');
               }
             },
