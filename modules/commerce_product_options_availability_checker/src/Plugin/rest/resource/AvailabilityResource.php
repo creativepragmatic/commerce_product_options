@@ -103,9 +103,18 @@ class AvailabilityResource extends ResourceBase {
 
       $variation = $this->entityTypeManager->getStorage('commerce_product_variation')->loadByProperties(['sku' => $sku]);
       if (count($variation) > 0) {
+
         $disable_cache = new CacheableMetadata();
         $disable_cache->setCacheMaxAge(0);
         $manager = \Drupal::service('commerce_stock.service_manager');
+        $service = $manager->getService(current($variation));
+        $checker = $service->getStockChecker();
+        $always = $checker->getIsAlwaysInStock(current($variation));
+
+        if ($always) {
+          return (new ResourceResponse('plentiful', 200))->addCacheableDependency($disable_cache);
+        }
+
         $level = intval($manager->getStockLevel(current($variation)));
 
         if ($level < 1) {
