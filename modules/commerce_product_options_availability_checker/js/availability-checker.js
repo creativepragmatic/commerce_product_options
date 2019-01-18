@@ -32,6 +32,9 @@
           }
         }
 
+        $('#edit-submit').prop('value', 'Checking...');
+        $('#edit-submit').prop('disabled', true);
+
         $.get(Drupal.url('rest/session/token')).done(function (csrfToken) {
           $.ajax({
             headers: {
