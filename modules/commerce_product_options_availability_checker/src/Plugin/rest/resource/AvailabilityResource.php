@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_product_options_availability_checker\Plugin\rest\resource;
 
+use Drupal\Core\Cache\CacheableJsonResponse;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -85,7 +86,7 @@ class AvailabilityResource extends ResourceBase {
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity object.
    *
-   * @return \Drupal\rest\ResourceResponse
+   * @return \Drupal\Core\Cache\CacheableJsonResponse
    *   The HTTP response object.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
@@ -112,19 +113,19 @@ class AvailabilityResource extends ResourceBase {
         $always = $checker->getIsAlwaysInStock(current($variation));
 
         if ($always) {
-          return (new ResourceResponse('plentiful', 200))->addCacheableDependency($disable_cache);
+          return (new CacheableJsonResponse('plentiful', 200))->addCacheableDependency($disable_cache);
         }
 
         $level = intval($manager->getStockLevel(current($variation)));
 
         if ($level < 1) {
-          return (new ResourceResponse('SOLD OUT', 200))->addCacheableDependency($disable_cache);
+          return (new CacheableJsonResponse('SOLD OUT', 200))->addCacheableDependency($disable_cache);
         }
         else if ($level > 0 && $level < 10) {
-          return (new ResourceResponse('Less than 10 available.', 200))->addCacheableDependency($disable_cache);
+          return (new CacheableJsonResponse('Less than 10 available.', 200))->addCacheableDependency($disable_cache);
         }
         else {
-          return (new ResourceResponse('plentiful', 200))->addCacheableDependency($disable_cache);
+          return (new CacheableJsonResponse('plentiful', 200))->addCacheableDependency($disable_cache);
         }
       }
       else {
