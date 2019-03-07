@@ -27,5 +27,8 @@ function commerce_product_options_availability_checker_form_alter(&$form, FormSt
 
   if (strpos($form_id, 'commerce_order_item_add_to_cart_form_commerce_product') === 0 && !empty($form['options'])) {
     $form['#attached']['library'][] = 'commerce_product_options_availability_checker/availability_checker';
+
+    // Prevents any caching if availability checker is enabled.
+    \Drupal::service('page_cache_kill_switch')->trigger();
   }
 }
