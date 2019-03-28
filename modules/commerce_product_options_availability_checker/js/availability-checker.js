@@ -32,7 +32,12 @@
           }
         }
 
-        $('#edit-submit').prop('value', 'Checking...');
+        if ($('#edit-submit').is('button')) {
+          $('#edit-submit').html('Checking...');
+        }
+        else if($('#edit-submit').is('input')) {
+          $('#edit-submit').prop('value', 'Checking...');
+        }
         $('#edit-submit').prop('disabled', true);
 
         $.get(Drupal.url('rest/session/token')).done(function (csrfToken) {
@@ -45,17 +50,32 @@
             url: drupalSettings.path.baseUrl + 'commerce-product-options/availability/' + sku + '?_format=json',
             success: function(data, textStatus, xhr) {
               if (data === 'SOLD OUT') {
-                $('#edit-submit').prop('value', data);
+                if ($('#edit-submit').is('button')) {
+                  $('#edit-submit').html(data);
+                }
+                else if($('#edit-submit').is('input')) {
+                  $('#edit-submit').prop('value', data);
+                }
                 $('#edit-submit').prop('disabled', true);
                 $('#strong-limited').remove();
               }
               else if (data === 'plentiful') {
-                $('#edit-submit').prop('value', 'Add to cart');
+                if ($('#edit-submit').is('button')) {
+                  $('#edit-submit').html('Add to cart');
+                }
+                else if($('#edit-submit').is('input')) {
+                  $('#edit-submit').prop('value', 'Add to cart');
+                }
                 $('#edit-submit').prop('disabled', false);
                 $('#strong-limited').remove();
               }
               else {
-                $('#edit-submit').prop('value', 'Add to cart');
+                if ($('#edit-submit').is('button')) {
+                  $('#edit-submit').html('Add to cart');
+                }
+                else if($('#edit-submit').is('input')) {
+                  $('#edit-submit').prop('value', 'Add to cart');
+                }
                 $('#edit-submit').prop('disabled', false);
                 $('#strong-limited').remove();
                 $('#edit-actions').after('<p id="strong-limited" style="text-align: center; margin-bottom: 0.75rem;">' + data + '</p>');
