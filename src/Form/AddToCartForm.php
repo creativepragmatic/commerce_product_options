@@ -9,7 +9,6 @@ use Drupal\commerce_cart\CartManagerInterface;
 use Drupal\commerce_cart\CartProviderInterface;
 use Drupal\commerce_order\Resolver\OrderTypeResolverInterface;
 use Drupal\commerce_price\Resolver\ChainPriceResolverInterface;
-use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_store\CurrentStoreInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
@@ -17,7 +16,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -214,8 +212,8 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     $form = parent::buildForm($form, $form_state);
 
     $product_id = $this->entity->getPurchasedEntity()->getProductId();
-    $storage  = $this->entityManager->getStorage('commerce_product');
-    $product = $storage ->load($product_id);
+    $storage = $this->entityManager->getStorage('commerce_product');
+    $product = $storage->load($product_id);
 
     if (!$product->get('options')->isEmpty()) {
       $options = $product->get('options')->getValue()[0]['fields'];
@@ -243,7 +241,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
         $form['options'][$machine_name_title] = [
           '#type' => $option['type'],
-          '#title' => t($option['title']),
+          '#title' => $option['title'],
           '#required' => $option['required'] ? TRUE : FALSE,
         ];
 
@@ -255,7 +253,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
           if (!empty($option['priceModifier'])) {
             $title = $option['title'] . ' +$' . number_format($option['priceModifier'], 2);
-            $form['options'][$machine_name_title]['#title'] = t($title);
+            $form['options'][$machine_name_title]['#title'] = $title;
           }
 
           if ($sku_generation === 'byOption' && !empty($option['skuGeneration'])) {
@@ -274,7 +272,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
         }
 
         if (!empty($option['helpText'])) {
-          $form['options'][$machine_name_title]['#description'] = t($option['helpText']);
+          $form['options'][$machine_name_title]['#description'] = $option['helpText'];
         }
 
         if (!empty($option['size'])) {
@@ -355,7 +353,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
       $this->cartManager->addOrderItem($cart, $order_item, FALSE, TRUE);
     }
-    else if ($form_state->getValue('sku-generation') === 'byOption') {
+    elseif ($form_state->getValue('sku-generation') === 'byOption') {
 
       $all_fields = $form_state->getCompleteForm();
       foreach ($all_fields['options'] as $field) {
@@ -487,6 +485,15 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     return $store;
   }
 
+  /**
+   * Builds an array of values from form.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   An array containing values from options entered in form.
+   */
   private function buildOptions(FormStateInterface $form_state) {
 
     $options = [];
@@ -500,13 +507,15 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
           case 'select':
             $options[$title] = $field['#options'][$field['#value']];
             break;
+
           case 'textfield':
             $options[$title] = $field['#value'];
             break;
+
           case 'checkbox':
             if ($form_state->getValue('sku-generation') === 'bySegment' ||
                  ($form_state->getValue('sku-generation') === 'byOption' && empty($field['#attributes']['data-sku-generation']))) {
-              $options[$title] = $field['#value'] ? 'Yes': 'No';
+              $options[$title] = $field['#value'] ? 'Yes' : 'No';
             }
             break;
         }

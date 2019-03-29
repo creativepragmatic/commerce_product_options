@@ -51,7 +51,6 @@ class CartController extends ControllerBase {
 
     $carts = $this->cartProvider->getCarts();
     $carts = array_filter($carts, function ($cart) {
-      /** @var \Drupal\commerce_order\Entity\OrderInterface $cart */
       return $cart->hasItems();
     });
     if (!empty($carts)) {
@@ -61,7 +60,6 @@ class CartController extends ControllerBase {
           '#prefix' => '<div class="cart cart-form">',
           '#suffix' => '</div>',
           '#type' => 'view',
-          //'#name' => $cart_views[$cart_id],
           '#name' => 'commerce_product_options_cart_form',
           '#arguments' => [$cart_id],
           '#embed' => TRUE,
@@ -93,15 +91,15 @@ class CartController extends ControllerBase {
    *   An array of view ids keyed by cart order ID.
    */
   protected function getCartViews(array $carts) {
+
     $order_type_ids = array_map(function ($cart) {
-    //  /** @var \Drupal\commerce_order\Entity\OrderInterface $cart */
       return $cart->bundle();
     }, $carts);
     $order_type_storage = $this->entityTypeManager()->getStorage('commerce_order_type');
     $order_types = $order_type_storage->loadMultiple(array_unique($order_type_ids));
     $cart_views = [];
+
     foreach ($order_type_ids as $cart_id => $order_type_id) {
-      /** @var \Drupal\commerce_order\Entity\OrderTypeInterface $order_type */
       $order_type = $order_types[$order_type_id];
       $cart_views[$cart_id] = $order_type->getThirdPartySetting('commerce_cart', 'cart_form_view', 'commerce_cart_form');
     }

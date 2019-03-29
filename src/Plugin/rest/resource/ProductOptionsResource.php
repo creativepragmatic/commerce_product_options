@@ -101,9 +101,10 @@ class ProductOptionsResource extends ResourceBase {
    *
    * @return \Drupal\Core\Cache\CacheableJsonResponse
    *   The JSON response containing product options.
-   * 
+   *
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
-   *   Throws access denied exception if user does not have required permissions.
+   *   Throws access denied exception if user does not have required
+   *   permissions.
    */
   public function get($product_id) {
 
@@ -128,7 +129,8 @@ class ProductOptionsResource extends ResourceBase {
 
     if (!empty($options['fields'])) {
       $fields = $options['fields'];
-    } else {
+    }
+    else {
       $fields = [];
     }
 
@@ -136,7 +138,7 @@ class ProductOptionsResource extends ResourceBase {
       'base_sku' => $base_sku,
       'base_price' => $base_price,
       'sku_generation' => $sku_generation,
-      'fields' => $fields
+      'fields' => $fields,
     ]);
 
     return $response;
@@ -166,9 +168,9 @@ class ProductOptionsResource extends ResourceBase {
    *
    * @param int $product_id
    *   The entity if of the product.
-   * @param $data
+   * @param string $data
    *   JSON list of options to be updated.
-   * 
+   *
    * @return \Symfony\Component\HttpFoundation\JsonResponse
    *   The JSON response containing product options.
    *
@@ -189,6 +191,7 @@ class ProductOptionsResource extends ResourceBase {
     }
 
     switch ($data['operation']) {
+
       case 'UPDATE_BASE_FIELDS':
         $options['base_sku'] = $data['base_sku'];
         $options['base_price'] = $data['base_price'];
@@ -198,9 +201,10 @@ class ProductOptionsResource extends ResourceBase {
         $response->setData([
           'base_sku' => $data['base_sku'],
           'base_price' => $data['base_price'],
-          'sku_generation' => $data['sku_generation']
+          'sku_generation' => $data['sku_generation'],
         ]);
         return $response;
+
       case 'ADD_TEXT_FIELD':
         $field['type'] = $data['type'];
         $field['title'] = $data['title'];
@@ -213,6 +217,7 @@ class ProductOptionsResource extends ResourceBase {
         $fields = $product->get('options')->first()->getValue()['fields'];
         $response->setData($fields);
         return $response;
+
       case 'ADD_CHECKBOX':
         $field['type'] = $data['type'];
         $field['title'] = $data['title'];
@@ -227,6 +232,7 @@ class ProductOptionsResource extends ResourceBase {
         $fields = $product->get('options')->first()->getValue()['fields'];
         $response->setData($fields);
         return $response;
+
       case 'ADD_SELECT':
         $field['type'] = $data['type'];
         $field['title'] = $data['title'];
@@ -240,6 +246,7 @@ class ProductOptionsResource extends ResourceBase {
         $fields = $product->get('options')->first()->getValue()['fields'];
         $response->setData($fields);
         return $response;
+
       case 'UPDATE_PRODUCT_VARIATIONS':
         $new_variations = [];
         $current_skus = [];
@@ -251,7 +258,7 @@ class ProductOptionsResource extends ResourceBase {
           }
         }
         $user = User::load($this->currentUser->id());
-        foreach($data['variations'] as $variation) {
+        foreach ($data['variations'] as $variation) {
           if (in_array($variation['SKU'], $current_skus)) {
             $storage = $this->entityTypeManager
               ->getStorage('commerce_product_variation');
@@ -280,4 +287,5 @@ class ProductOptionsResource extends ResourceBase {
         return $response;
     }
   }
+
 }
