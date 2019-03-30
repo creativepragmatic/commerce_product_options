@@ -241,7 +241,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
         $form['options'][$machine_name_title] = [
           '#type' => $option['type'],
-          '#title' => $option['title'],
+          '#title' => $this->t($option['title']),
           '#required' => $option['required'] ? TRUE : FALSE,
         ];
 
@@ -253,7 +253,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
           if (!empty($option['priceModifier'])) {
             $title = $option['title'] . ' +$' . number_format($option['priceModifier'], 2);
-            $form['options'][$machine_name_title]['#title'] = $title;
+            $form['options'][$machine_name_title]['#title'] = $this->t($title);
           }
 
           if ($sku_generation === 'byOption' && !empty($option['skuGeneration'])) {
@@ -272,7 +272,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
         }
 
         if (!empty($option['helpText'])) {
-          $form['options'][$machine_name_title]['#description'] = $option['helpText'];
+          $form['options'][$machine_name_title]['#description'] = $this->t($option['helpText']);
         }
 
         if (!empty($option['size'])) {

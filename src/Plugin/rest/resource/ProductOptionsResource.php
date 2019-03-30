@@ -4,6 +4,7 @@ namespace Drupal\commerce_product_options\Plugin\rest\resource;
 
 use Drupal\Core\Cache\CacheableJsonResponse;
 use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\commerce_price\Price;
@@ -45,6 +46,13 @@ class ProductOptionsResource extends ResourceBase {
   protected $entityTypeManager;
 
   /**
+   * The kill switch.
+   *
+   * @var \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
+   */
+  protected $killSwitch;
+
+  /**
    * Constructs a new ProductOptionsResource object.
    *
    * @param array $configuration
@@ -61,19 +69,15 @@ class ProductOptionsResource extends ResourceBase {
    *   A current user instance.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch $killSwitch
+   *   The kill switch.
    */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    AccountProxyInterface $current_user,
-    EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountProxyInterface $current_user, EntityTypeManagerInterface $entity_type_manager, KillSwitch $killSwitch) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
     $this->entityTypeManager = $entity_type_manager;
+    $this->killSwitch = $killSwitch;
   }
 
   /**
@@ -87,7 +91,8 @@ class ProductOptionsResource extends ResourceBase {
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('commerce_product_options'),
       $container->get('current_user'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('page_cache_kill_switch')
     );
   }
 
@@ -107,6 +112,9 @@ class ProductOptionsResource extends ResourceBase {
    *   permissions.
    */
   public function get($product_id) {
+
+    // Prevents endpoint from being cached.
+    $this->killSwitch->trigger();
 
     if (!$this->currentUser->hasPermission('administer commerce_product')) {
       throw new AccessDeniedHttpException();
