@@ -86,3 +86,13 @@ function commerce_product_options_theme() {
     ],
   ];
 }
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function commerce_product_options_user_insert(EntityInterface $entity) {
+  $entity->set('field_driver_class', 'NFT');
+  $entity->set('field_first_name', ucfirst($entity->get('field_first_name')->value));
+  $entity->set('field_last_name', ucfirst($entity->get('field_last_name')->value));
+  $entity->save();
+}
