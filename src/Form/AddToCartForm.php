@@ -316,8 +316,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
           if (!empty($option['options'])) {
 
-            if (strcmp($machine_name_title, 'driver_class') === 0 &&
-                !empty($driver->get('field_driver_class')->value)) {
+            if (strcmp($machine_name_title, 'driver_class') === 0) {
               $option['options'] = $this->filterDriverClasses($option['options'], $driver->get('field_driver_class')->value);
             }
 
@@ -466,7 +465,6 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     );
   }
 
-
   /**
    * {@inheritdoc}
    */
@@ -609,6 +607,10 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
       array_push($filtered_classes, $class);
       if (strcmp($class['skuSegment'], $level) === 0) {
+        break;
+      }
+
+      if (empty($level)) {
         break;
       }
     }
