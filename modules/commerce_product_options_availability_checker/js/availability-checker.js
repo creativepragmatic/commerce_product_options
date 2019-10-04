@@ -32,13 +32,14 @@
           }
         }
 
-        if ($('#edit-submit').is('button')) {
-          $('#edit-submit').html('Checking...');
+        // Disable registration button while checking availability.
+        if ($('#edit-register').is('button')) {
+          $('#edit-register').html('Checking...');
         }
-        else if($('#edit-submit').is('input')) {
-          $('#edit-submit').prop('value', 'Checking...');
+        else if($('#edit-register').is('input')) {
+          $('#edit-register').prop('value', 'Checking...');
         }
-        $('#edit-submit').prop('disabled', true);
+        $('#edit-register').prop('disabled', true);
 
         $.get(Drupal.url('rest/session/token')).done(function (csrfToken) {
           $.ajax({
@@ -50,33 +51,33 @@
             url: drupalSettings.path.baseUrl + 'commerce-product-options/availability/' + sku + '?_format=json',
             success: function(data, textStatus, xhr) {
               if (data === 'SOLD OUT') {
-                if ($('#edit-submit').is('button')) {
-                  $('#edit-submit').html(data);
+                if ($('#edit-register').is('button')) {
+                  $('#edit-register').html(data);
                 }
-                else if($('#edit-submit').is('input')) {
-                  $('#edit-submit').prop('value', data);
+                else if($('#edit-register').is('input')) {
+                  $('#edit-register').prop('value', data);
                 }
-                $('#edit-submit').prop('disabled', true);
+                $('#edit-register').prop('disabled', true);
                 $('#strong-limited').remove();
               }
               else if (data === 'plentiful') {
-                if ($('#edit-submit').is('button')) {
-                  $('#edit-submit').html('Add to cart');
+                if ($('#edit-register').is('button')) {
+                  $('#edit-register').html('Add to cart');
                 }
-                else if($('#edit-submit').is('input')) {
-                  $('#edit-submit').prop('value', 'Add to cart');
+                else if($('#edit-register').is('input')) {
+                  $('#edit-register').prop('value', 'Add to cart');
                 }
-                $('#edit-submit').prop('disabled', false);
+                $('#edit-register').prop('disabled', false);
                 $('#strong-limited').remove();
               }
               else {
-                if ($('#edit-submit').is('button')) {
-                  $('#edit-submit').html('Add to cart');
+                if ($('#edit-register').is('button')) {
+                  $('#edit-register').html('Add to cart');
                 }
-                else if($('#edit-submit').is('input')) {
-                  $('#edit-submit').prop('value', 'Add to cart');
+                else if($('#edit-register').is('input')) {
+                  $('#edit-register').prop('value', 'Add to cart');
                 }
-                $('#edit-submit').prop('disabled', false);
+                $('#edit-register').prop('disabled', false);
                 $('#strong-limited').remove();
                 $('#edit-actions').after('<p id="strong-limited" style="text-align: center; margin-bottom: 0.75rem;">' + data + '</p>');
               }
