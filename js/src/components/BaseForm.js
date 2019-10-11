@@ -47,12 +47,12 @@ export class BaseForm extends Component {
           store.dispatch(action);
         })
         .catch(function (error) {
-console.log(error);
+          console.log(error);
         });
       })
       .catch(function (error) {
-console.log(error);
-      });      
+        console.log(error);
+      });
   }
 
   handleInputChange(event) {
@@ -99,11 +99,11 @@ console.log(error);
           store.dispatch(action);
         })
         .catch(function (error) {
-console.log(error.message);
+          console.log(error.message);
         });
       })
       .catch(function (error) {
-console.log(error);
+        console.log(error);
       });
   }
 

@@ -255,6 +255,40 @@ class ProductOptionsResource extends ResourceBase {
         $response->setData($fields);
         return $response;
 
+      case 'MOVE_UP_FIELD':
+        if ($data['index'] > 0)
+        {
+          $movedItem = array_splice($options['fields'], $data['index'], 1);
+          array_splice($options['fields'], $data['index'] - 1, 0, $movedItem);
+          $product->set('options', $options);
+          $product->save();
+        }
+        $fields = $product->get('options')->first()->getValue()['fields'];
+        $response->setData($fields);
+        return $response;
+
+      case 'MOVE_DOWN_FIELD':
+        if ($data['index'] + 1 < count($options['fields']))
+        {
+          $movedItem = array_splice($options['fields'], $data['index'], 1);
+          array_splice($options['fields'], $data['index'] + 1, 0, $movedItem);
+          $product->set('options', $options);
+          $product->save();
+        }
+        $fields = $product->get('options')->first()->getValue()['fields'];
+        $response->setData($fields);
+        return $response;
+
+      case 'DELETE_FIELD':
+        unset($options['fields'][$data['index']]);
+        // reindex the array to squash any gaps
+        $options['fields'] = array_values($options['fields']);
+        $product->set('options', $options);
+        $product->save();
+        $fields = $product->get('options')->first()->getValue()['fields'];
+        $response->setData($fields);
+        return $response;
+
       case 'UPDATE_PRODUCT_VARIATIONS':
         $new_variations = [];
         $current_skus = [];

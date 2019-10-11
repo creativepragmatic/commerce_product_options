@@ -70,6 +70,14 @@
     padding-left: 0;
     li {
       display: inline;
+      border: 1px solid black;
+      margin-right: 5px;
+      padding: 2px 5px;
+      border-radius: 5px;
     }
   }
+}
+
+.center {
+  text-align: center;
 }

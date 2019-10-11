@@ -39,7 +39,7 @@ export class OptionSetTable extends Component {
           store.dispatch(action);
         })
         .catch(function (error) {
-console.log(error);
+          console.log(error);
         });
       });
   }
@@ -50,6 +50,7 @@ console.log(error);
     this.state.fields.forEach(function(field, fieldIndex) {
       rowBuffer.push(<OptionSetRow
         key={fieldIndex}
+        fieldIndex={fieldIndex}
         rowType="field-row"
         title={field.title}
         size={field.size}
@@ -62,7 +63,7 @@ console.log(error);
       if (field.hasOwnProperty('options') && field.options.length > 0) {
         field.options.forEach(function(option, optionIndex) {
           rowBuffer.push(<OptionSetRow
-            key={optionIndex}
+            key={fieldIndex + '-' + optionIndex}
             rowType="option-row"
             title={'\xa0\xa0\xa0\xa0\xa0\xa0' + option.optionTitle}
             sku={option.skuSegment}
@@ -91,6 +92,9 @@ console.log(error);
             <th>Size</th>
             <th>Required</th>
             <th>Type</th>
+            <th className="center">Move Up</th>
+            <th className="center">Move Down</th>
+            <th className="center">Delete</th>
           </tr>
         </thead>
         {this.buildTable()}
