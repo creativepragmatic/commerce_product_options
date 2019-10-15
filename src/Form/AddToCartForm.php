@@ -2,6 +2,18 @@
 
 namespace Drupal\commerce_product_options\Form;
 
+use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Serialization\Json;
+use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Path\AliasManagerInterface;
+use Drupal\Core\Path\CurrentPathStack;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 use Drupal\commerce\AvailabilityManagerInterface;
 use Drupal\commerce\Context;
 use Drupal\commerce\PurchasableEntityInterface;
@@ -10,15 +22,6 @@ use Drupal\commerce_cart\CartProviderInterface;
 use Drupal\commerce_order\Resolver\OrderTypeResolverInterface;
 use Drupal\commerce_price\Resolver\ChainPriceResolverInterface;
 use Drupal\commerce_store\CurrentStoreInterface;
-use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\Entity\ContentEntityForm;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Path\CurrentPathStack;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -98,6 +101,13 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
   protected $currentPath;
 
   /**
+   * The path alias manager.
+   *
+   * @var \Drupal\Core\Path\AliasManagerInterface
+   */
+  protected $aliasManager;
+
+  /**
    * Constructs a new AddToCartForm object.
    *
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
@@ -124,8 +134,10 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
    *   The entity type manager.
    * @param \Drupal\Core\Path\CurrentPathStack $current_path
    *   The current path.
+   * @param \Drupal\Core\Path\AliasManagerInterface $alias_manager
+   *   The path alias manager.
    */
-  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, AvailabilityManagerInterface $availability_manager, CartManagerInterface $cart_manager, CartProviderInterface $cart_provider, OrderTypeResolverInterface $order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, CurrentPathStack $current_path) {
+  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, AvailabilityManagerInterface $availability_manager, CartManagerInterface $cart_manager, CartProviderInterface $cart_provider, OrderTypeResolverInterface $order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, CurrentPathStack $current_path, AliasManagerInterface $alias_manager) {
     parent::__construct($entity_manager, $entity_type_bundle_info, $time);
 
     $this->availabilityManager = $availability_manager;
@@ -137,6 +149,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     $this->currentUser = $current_user;
     $this->entityTypeManager = $entity_type_manager;
     $this->currentPath = $current_path;
+    $this->aliasManager = $alias_manager;
   }
 
   /**
@@ -155,7 +168,8 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
       $container->get('commerce_price.chain_price_resolver'),
       $container->get('current_user'),
       $container->get('entity_type.manager'),
-      $container->get('path.current')
+      $container->get('path.current'),
+      $container->get('path.alias_manager')
     );
   }
 
@@ -230,6 +244,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     $product = $storage->load($product_id);
 
     if (!$product->get('options')->isEmpty()) {
+
       $options = $product->get('options')->getValue()[0]['fields'];
       $base_sku = $product->get('options')->getValue()[0]['base_sku'];
       $sku_generation = $product->get('options')->getValue()[0]['sku_generation'];
@@ -261,85 +276,125 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
           $machine_name_title = preg_replace('@[^a-z0-9-]+@', '_', strtolower($option['title']));
 
-          $form['options'][$machine_name_title] = [
-            '#type' => $option['type'],
-            '#title' => $this->t($option['title']),
-            '#required' => $option['required'] ? TRUE : FALSE,
-          ];
+          if (strcmp($machine_name_title, 'driver_vehicle') === 0 &&
+              strcmp($option['type'], 'select') === 0) {
 
-          if (strcmp($option['type'], 'textfield') === 0) {
+            $current_alias = substr($this->aliasManager->getAliasByPath($this->currentPath->getPath()), 1);
 
-            if (strcmp($machine_name_title, 'driver_s_first_name') === 0 &&
-                !empty($driver->get('field_first_name')->value)) {
-              $form['options'][$machine_name_title]['#default_value'] = $driver->get('field_first_name')->value;
-            }
+            $form['options']['driver_vehicle'] = [
+              '#type' => 'container',
+              '#name' => 'driver_vehicle',
+              '#title' => $this->t('Driver Vehicle'),
+            ];
 
-            if (strcmp($machine_name_title, 'driver_s_last_name') === 0 &&
-                !empty($driver->get('field_last_name')->value)) {
-              $form['options'][$machine_name_title]['#default_value'] = $driver->get('field_last_name')->value;
-            }
-          }
+            $form['options']['driver_vehicle'][$machine_name_title] = [
+              '#type' => $option['type'],
+              '#title' => $this->t($option['title']),
+              '#options' => $this->getVehicles(),
+              '#required' => $option['required'] ? TRUE : FALSE,
+            ];
 
-          if ($option['type'] === 'checkbox') {
-            if ($option['mandatoryOption']) {
-              $form['options'][$machine_name_title]['#default_value'] = TRUE;
-              $form['options'][$machine_name_title]['#disabled'] = TRUE;
-            }
-
-            if (!empty($option['priceModifier'])) {
-              $title = $option['title'] . ' +$' . number_format($option['priceModifier'], 2);
-              $form['options'][$machine_name_title]['#title'] = $this->t($title);
-            }
-
-            if ($sku_generation === 'byOption' && !empty($option['skuGeneration'])) {
-              $form['options'][$machine_name_title]['#attributes'] = [
-                'data-sku-generation' => 1,
-                'data-sku' => $base_sku . '-' . $option['skuSegment'],
-              ];
-            }
-          }
-
-          if ($option['type'] === 'select') {
-            $sku_generation = !empty($option['skuGeneration']) ? 'Yes' : 'No';
-            $form['options'][$machine_name_title]['#attributes'] = [
-              'data-sku-generation' => [$sku_generation],
+            $form['options']['driver_vehicle']['add'] = [
+              '#type' => 'link',
+              '#title' => $this->t('Add'),
+              '#attributes' => [
+                'class' => ['use-ajax'],
+                'data-dialog-type' => 'dialog',
+                'data-dialog-renderer' => 'off_canvas',
+                'data-dialog-options' => Json::encode([
+                  'width' => 240,
+                ]),
+                'id' => 'add-vehicle',
+              ],
+              '#url' => Url::fromRoute('profile.user_page.add_form', [
+                'user' => $this->currentUser->id(),
+                'profile_type' => 'garage',
+                'destination' => $current_alias,
+              ]),
             ];
           }
+          else {
 
-          if (!empty($option['helpText'])) {
-            $form['options'][$machine_name_title]['#description'] = $this->t($option['helpText']);
-          }
+            $form['options'][$machine_name_title] = [
+              '#type' => $option['type'],
+              '#title' => $this->t($option['title']),
+              '#required' => $option['required'] ? TRUE : FALSE,
+            ];
 
-          if (!empty($option['size'])) {
-            $form['options'][$machine_name_title]['#size'] = $option['size'];
-          }
+            if (strcmp($option['type'], 'textfield') === 0) {
 
-          if (!empty($option['options'])) {
+              if (strcmp($machine_name_title, 'driver_s_first_name') === 0 &&
+                  !empty($driver->get('field_first_name')->value)) {
+                $form['options'][$machine_name_title]['#default_value'] = $driver->get('field_first_name')->value;
+              }
 
-            if (strcmp($machine_name_title, 'driver_class') === 0) {
-              $option['options'] = $this->filterDriverClasses($option['options'], $driver->get('field_driver_class')->value);
+              if (strcmp($machine_name_title, 'driver_s_last_name') === 0 &&
+                  !empty($driver->get('field_last_name')->value)) {
+                $form['options'][$machine_name_title]['#default_value'] = $driver->get('field_last_name')->value;
+              }
             }
 
-            foreach ($option['options'] as $select_option) {
-              if ($select_option['isDefault']) {
-                $default = $select_option['skuSegment'];
+            if ($option['type'] === 'checkbox') {
+              if ($option['mandatoryOption']) {
+                $form['options'][$machine_name_title]['#default_value'] = TRUE;
+                $form['options'][$machine_name_title]['#disabled'] = TRUE;
               }
-              if (!empty($select_option['priceModifier'])) {
-                $modifier = ', +$' . number_format($select_option['priceModifier'], 2);
-                $title = $select_option['optionTitle'] . $modifier;
+
+              if (!empty($option['priceModifier'])) {
+                $title = $option['title'] . ' +$' . number_format($option['priceModifier'], 2);
+                $form['options'][$machine_name_title]['#title'] = $this->t($title);
               }
-              else {
-                $title = $select_option['optionTitle'];
+
+              if ($sku_generation === 'byOption' && !empty($option['skuGeneration'])) {
+                $form['options'][$machine_name_title]['#attributes'] = [
+                  'data-sku-generation' => 1,
+                  'data-sku' => $base_sku . '-' . $option['skuSegment'],
+                ];
               }
-              $select_options[$select_option['skuSegment']] = $title;
             }
 
-            $form['options'][$machine_name_title]['#options'] = $select_options;
-            if (!empty($default)) {
-              $form['options'][$machine_name_title]['#default_value'] = $default;
-              unset($default);
+            if ($option['type'] === 'select') {
+              $sku_generation = !empty($option['skuGeneration']) ? 'Yes' : 'No';
+              $form['options'][$machine_name_title]['#attributes'] = [
+                'data-sku-generation' => [$sku_generation],
+              ];
             }
-            unset($select_options);
+
+            if (!empty($option['helpText'])) {
+              $form['options'][$machine_name_title]['#description'] = $this->t($option['helpText']);
+            }
+
+            if (!empty($option['size'])) {
+              $form['options'][$machine_name_title]['#size'] = $option['size'];
+            }
+
+            if (!empty($option['options'])) {
+
+              if (strcmp($machine_name_title, 'driver_class') === 0) {
+                $option['options'] = $this->filterDriverClasses($option['options'], $driver->get('field_driver_class')->value);
+              }
+
+              foreach ($option['options'] as $select_option) {
+                if ($select_option['isDefault']) {
+                  $default = $select_option['skuSegment'];
+                }
+                if (!empty($select_option['priceModifier'])) {
+                  $modifier = ', +$' . number_format($select_option['priceModifier'], 2);
+                  $title = $select_option['optionTitle'] . $modifier;
+                }
+                else {
+                  $title = $select_option['optionTitle'];
+                }
+                $select_options[$select_option['skuSegment']] = $title;
+              }
+
+              $form['options'][$machine_name_title]['#options'] = $select_options;
+              if (!empty($default)) {
+                $form['options'][$machine_name_title]['#default_value'] = $default;
+                unset($default);
+              }
+              unset($select_options);
+            }
           }
         }
       }
@@ -564,9 +619,13 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     $field_keys = array_intersect_key($form_state->getValues(), $all_fields['options']);
 
     foreach ($all_fields['options'] as $field) {
+
       if (isset($field['#name']) && array_key_exists($field['#name'], $field_keys)) {
+
         $title = $field['#title']->getUntranslatedString();
+
         switch ($field['#type']) {
+
           case 'select':
             $options[$title] = $field['#options'][$field['#value']];
             break;
@@ -580,6 +639,10 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
                  ($form_state->getValue('sku-generation') === 'byOption' && empty($field['#attributes']['data-sku-generation']))) {
               $options[$title] = $field['#value'] ? 'Yes' : 'No';
             }
+            break;
+
+          case 'container':
+            $options[$title] = $field['driver_vehicle']['#options'][$field['driver_vehicle']['#value']];
             break;
         }
       }
@@ -616,6 +679,44 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     }
 
     return $filtered_classes;
+  }
+
+  /**
+   * Gets all cars in the garage.
+   *
+   * @return array
+   *   An associative array containing car details.
+   */
+  private function getVehicles() {
+
+    $query = $this->entityTypeManager->getStorage('profile')->getQuery();
+    $ids = $query
+      ->condition('type', 'garage')
+      ->condition('status', TRUE)
+      ->condition('uid', $this->getCurrentUser()->id())
+      ->sort('is_default', 'DESC')
+      ->sort('profile_id', 'DESC')
+      ->execute();
+
+    $vehicles = $this->entityTypeManager->getStorage('profile')->loadMultiple($ids);
+
+    foreach ($vehicles as $vehicle) {
+
+      $details = $vehicle->get('field_color')->getString();
+      $details .= ' ' . $vehicle->get('field_year')->getString();
+      $details .= ' ' . $vehicle->get('field_make')->getString();
+      $details .= ' ' . $vehicle->get('field_model')->getString();
+
+      if (!empty($vehicle->get('field_permanent_number')->getString())) {
+        $details .= ' (#' . $vehicle->get('field_permanent_number')->getString() . ')';
+      }
+
+      $garage[$vehicle->id()] = $details;
+    }
+
+    asort($garage);
+
+    return $garage;
   }
 
 }
