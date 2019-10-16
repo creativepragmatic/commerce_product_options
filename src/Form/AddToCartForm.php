@@ -689,6 +689,8 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
    */
   private function getVehicles() {
 
+    $garage = [];
+
     $query = $this->entityTypeManager->getStorage('profile')->getQuery();
     $ids = $query
       ->condition('type', 'garage')
@@ -714,7 +716,9 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
       $garage[$vehicle->id()] = $details;
     }
 
-    asort($garage);
+    if (!empty($garage)) {
+      asort($garage);
+    }
 
     return $garage;
   }
