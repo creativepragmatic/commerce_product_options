@@ -302,6 +302,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
                 'data-dialog-type' => 'dialog',
                 'data-dialog-renderer' => 'off_canvas',
                 'data-dialog-options' => Json::encode([
+                  'title' => 'Add vehicle',
                   'width' => 240,
                 ]),
                 'id' => 'add-vehicle',
