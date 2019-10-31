@@ -692,26 +692,21 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
     $garage = [];
 
-    $query = $this->entityTypeManager->getStorage('profile')->getQuery();
-    $ids = $query
-      ->condition('type', 'garage')
-      ->condition('status', TRUE)
-      ->condition('uid', $this->getCurrentUser()->id())
-      ->sort('is_default', 'DESC')
-      ->sort('profile_id', 'DESC')
-      ->execute();
-
-    $vehicles = $this->entityTypeManager->getStorage('profile')->loadMultiple($ids);
+    $vehicles = $this->entityTypeManager
+      ->getStorage('vehicle')
+      ->loadByProperties([
+        'uid' => $this->getCurrentUser()->id()
+      ]);
 
     foreach ($vehicles as $vehicle) {
 
-      $details = $vehicle->get('field_color')->getString();
-      $details .= ' ' . $vehicle->get('field_year')->getString();
-      $details .= ' ' . $vehicle->get('field_make')->getString();
-      $details .= ' ' . $vehicle->get('field_model')->getString();
+      $details = $vehicle->getColor();
+      $details .= ' ' . $vehicle->getYear();
+      $details .= ' ' . $vehicle->getMake();
+      $details .= ' ' . $vehicle->getModel();
 
-      if (!empty($vehicle->get('field_permanent_number')->getString())) {
-        $details .= ' (#' . $vehicle->get('field_permanent_number')->getString() . ')';
+      if (!empty($vehicle->getPermanentNumber())) {
+        $details .= ' (#' . $vehicle->getPermanentNumber() . ')';
       }
 
       $garage[$vehicle->id()] = $details;
