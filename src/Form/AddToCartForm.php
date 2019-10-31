@@ -307,7 +307,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
                 ]),
                 'id' => 'add-vehicle',
               ],
-              '#url' => Url::fromRoute('profile.user_page.add_form', [
+              '#url' => Url::fromRoute('entity.vehicle.add_form', [
                 'user' => $this->currentUser->id(),
                 'profile_type' => 'garage',
                 'destination' => $current_alias,
