@@ -4,6 +4,7 @@ import store from '../store';
 import * as types from '../actions/action-types';
 
 export class OptionSetRow extends Component {
+
   constructor(props) {
     super(props);
 
@@ -139,31 +140,31 @@ export class OptionSetRow extends Component {
   render() {
     if (this.props.rowType === 'field-row' && this.props.type === 'textfield') {
       return (
-      <tr className={this.props.rowType}>
-        <td className="field-title" colspan="2">{this.props.title}</td>
-        <td colspan="2">&nbsp;</td>
-        <td>{this.props.size}</td>
-        <td className="field-required">{this.props.required}</td>
-        <td>{this.props.type}</td>
-        <td className="center"><button onClick={this.handleMoveUp}>UP</button></td>
-        <td className="center"><button onClick={this.handleMoveDown}>DOWN</button></td>
-        <td className="center"><button onClick={this.handleDelete}>DELETE</button></td>
-      </tr>
-      );
-    }
-    else if (this.props.rowType === 'field-row' && this.props.type === 'checkbox') {
-      if (this.props.skuGeneration) {
-        return (
         <tr className={this.props.rowType}>
-          <td colspan="2">{this.props.title}</td>
-          <td>{this.props.skuSegment}</td>
-          <td>{this.props.priceModifier}</td>
-          <td>&nbsp;</td>
+          <td className="field-title" colspan="2">{this.props.title}</td>
+          <td colspan="2">&nbsp;</td>
+          <td>{this.props.size}</td>
           <td className="field-required">{this.props.required}</td>
           <td>{this.props.type}</td>
           <td className="center"><button onClick={this.handleMoveUp}>UP</button></td>
           <td className="center"><button onClick={this.handleMoveDown}>DOWN</button></td>
           <td className="center"><button onClick={this.handleDelete}>DELETE</button></td>
+        </tr>
+      );
+    }
+    else if (this.props.rowType === 'field-row' && this.props.type === 'checkbox') {
+      if (this.props.skuGeneration) {
+        return (
+          <tr className={this.props.rowType}>
+            <td colspan="2">{this.props.title}</td>
+            <td>{this.props.skuSegment}</td>
+            <td>{this.props.priceModifier}</td>
+            <td>&nbsp;</td>
+            <td className="field-required">{this.props.required}</td>
+            <td>{this.props.type}</td>
+            <td className="center"><button onClick={this.handleMoveUp}>UP</button></td>
+            <td className="center"><button onClick={this.handleMoveDown}>DOWN</button></td>
+            <td className="center"><button onClick={this.handleDelete}>DELETE</button></td>
           </tr>
         );
       }
@@ -184,6 +185,18 @@ export class OptionSetRow extends Component {
       return (
         <tr className={this.props.rowType}>
           <td className="field-title" colspan="5">{this.props.title}</td>
+          <td className="field-required">{this.props.required}</td>
+          <td>{this.props.type}</td>
+          <td className="center"><button onClick={this.handleMoveUp}>UP</button></td>
+          <td className="center"><button onClick={this.handleMoveDown}>DOWN</button></td>
+          <td className="center"><button onClick={this.handleDelete}>DELETE</button></td>
+        </tr>
+      );
+    }
+    else if (this.props.rowType === 'field-row' && this.props.type === 'add-on') {
+      return (
+        <tr className={this.props.rowType}>
+          <td colspan="5">{this.props.title}</td>
           <td className="field-required">{this.props.required}</td>
           <td>{this.props.type}</td>
           <td className="center"><button onClick={this.handleMoveUp}>UP</button></td>

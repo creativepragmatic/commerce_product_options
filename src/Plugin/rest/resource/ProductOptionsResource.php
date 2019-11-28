@@ -241,6 +241,20 @@ class ProductOptionsResource extends ResourceBase {
         $response->setData($fields);
         return $response;
 
+      case 'ADD_ADD_ON':
+        $field['type'] = $data['type'];
+        $field['addOnId'] = $data['addOnId'];
+        $field['title'] = $data['addOnTitle'];
+        $field['requiredRoles'] = $data['requiredRoles'];
+        $field['helpText'] = $data['helpText'];
+        $field['required'] = $data['required'];
+        $options['fields'][] = $field;
+        $product->set('options', $options);
+        $product->save();
+        $fields = $product->get('options')->first()->getValue()['fields'];
+        $response->setData($fields);
+        return $response;
+
       case 'ADD_SELECT':
         $field['type'] = $data['type'];
         $field['title'] = $data['title'];

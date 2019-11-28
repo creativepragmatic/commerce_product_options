@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Path\AliasManagerInterface;
 use Drupal\Core\Path\CurrentPathStack;
 use Drupal\Core\Session\AccountInterface;
@@ -21,6 +22,8 @@ use Drupal\commerce_cart\CartManagerInterface;
 use Drupal\commerce_cart\CartProviderInterface;
 use Drupal\commerce_order\Resolver\OrderTypeResolverInterface;
 use Drupal\commerce_price\Resolver\ChainPriceResolverInterface;
+use Drupal\commerce_product\Entity\Product;
+use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_store\CurrentStoreInterface;
 use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -334,8 +337,8 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
                 $form['options'][$machine_name_title]['#default_value'] = $driver->get('field_last_name')->value;
               }
             }
+            else if (strcmp($option['type'], 'checkbox') === 0) {
 
-            if ($option['type'] === 'checkbox') {
               if ($option['mandatoryOption']) {
                 $form['options'][$machine_name_title]['#default_value'] = TRUE;
                 $form['options'][$machine_name_title]['#disabled'] = TRUE;
@@ -353,12 +356,35 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
                 ];
               }
             }
+            else if (strcmp($option['type'], 'select') === 0) {
 
-            if ($option['type'] === 'select') {
               $sku_generation = !empty($option['skuGeneration']) ? 'Yes' : 'No';
               $form['options'][$machine_name_title]['#attributes'] = [
                 'data-sku-generation' => [$sku_generation],
               ];
+            }
+            else if (strcmp($option['type'], 'add-on') === 0) {
+
+              $add_on_options = [];
+              $sku_generation = 'No';
+              $addOn = Product::load($option['addOnId']);
+
+              $form['options'][$machine_name_title]['#type'] = 'select';
+              
+              $form['options'][$machine_name_title]['#attributes'] = [
+                'data-sku-generation' => [$sku_generation],
+                'data-add-on' => 'Yes',
+              ];
+
+              foreach ($addOn->getVariations() as $add_on_option) {
+                $add_on_options[$add_on_option->getSku()] = $add_on_option->label() . ', +$' . number_format($add_on_option->getPrice()->getNumber(), 2);
+              }
+
+              $form['options'][$machine_name_title]['#options'] = $add_on_options;
+
+              if (empty(array_intersect($option['requiredRoles'], $driver->getRoles()))) {
+                $form['options'][$machine_name_title]['#disabled'] = TRUE;
+              }
             }
 
             if (!empty($option['helpText'])) {
@@ -371,7 +397,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
 
             if (!empty($option['options'])) {
 
-              if (strcmp($machine_name_title, 'driver_class') === 0) {
+              if (strcmp($machine_name_title, 'driver_class') === 0 || strcmp($machine_name_title, 'run_group') === 0) {
                 $option['options'] = $this->filterDriverClasses($option['options'], $driver->get('field_driver_class')->value);
               }
 
@@ -442,11 +468,11 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     /** @var \Drupal\commerce_order\Entity\OrderItemInterface $order_item */
     $order_item = $this->entity;
 
+    $combine = $form_state->get(['settings', 'combine']);
     $options = $this->buildOptions($form_state);
     $order_item->setData('product_option', $options);
 
     if ($form_state->getValue('sku-generation') === 'bySegment') {
-
       /** @var \Drupal\commerce\PurchasableEntityInterface $purchased_entity */
       $purchased_entity = $order_item->getPurchasedEntity();
 
@@ -460,7 +486,6 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
       $this->cartManager->addOrderItem($cart, $order_item, FALSE, TRUE);
     }
     elseif ($form_state->getValue('sku-generation') === 'byOption') {
-
       $all_fields = $form_state->getCompleteForm();
       foreach ($all_fields['options'] as $field) {
         if (is_array($field) && $field['#attributes']['data-sku-generation'] && $field['#checked']) {
@@ -497,6 +522,30 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
         $cart = $this->cartProvider->createCart($order_type_id, $store);
       }
       $this->entity = $this->cartManager->addOrderItem($cart, $order_item, $form_state->get(['settings', 'combine']));
+    }
+
+    foreach ($form['options'] as $field) {
+      if (!empty($field['#type']) && strcmp($field['#type'], 'select') === 0 &&
+          !empty($field['#attributes']['data-add-on']) && strcmp($field['#attributes']['data-add-on'], 'Yes') === 0) {
+
+        if (!empty($field['#value'])) {
+
+          $query = $this->entityTypeManager->getStorage('commerce_product_variation');
+          $id = $query->getQuery()
+            ->condition('sku', $field['#value'])
+            ->execute();
+          $variation = ProductVariation::load(current($id));
+
+          $add_on_item = $this->cartManager->createOrderItem($variation);
+          $store = $this->selectStore($variation);
+          $context = new Context($this->currentUser, $store);
+          $resolved_price = $this->chainPriceResolver->resolve($variation, 1, $context);
+          $add_on_item->setTitle($variation->getOrderItemTitle());
+          $add_on_item->setUnitPrice($resolved_price);
+
+          $this->cartManager->addOrderItem($cart, $add_on_item, $combine);
+        }
+      }
     }
 
     // Other submit handlers might need the cart ID.
@@ -628,7 +677,9 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
         switch ($field['#type']) {
 
           case 'select':
-            $options[$title] = $field['#options'][$field['#value']];
+            if (empty($field['#attributes']['data-add-on'])) {
+              $options[$title] = $field['#options'][$field['#value']];
+            }
             break;
 
           case 'textfield':
