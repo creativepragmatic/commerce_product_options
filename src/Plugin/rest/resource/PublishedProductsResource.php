@@ -4,12 +4,10 @@ namespace Drupal\commerce_product_options\Plugin\rest\resource;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -93,7 +91,7 @@ class PublishedProductsResource extends ResourceBase {
     $query = $this->entityTypeManager->getStorage('commerce_product');
     $ids = $query->getQuery()
       ->condition('status', 1)
-      ->accessCheck(false)
+      ->accessCheck(FALSE)
       ->execute();
 
     $results = $this->entityTypeManager->getStorage('commerce_product')->loadMultiple($ids);

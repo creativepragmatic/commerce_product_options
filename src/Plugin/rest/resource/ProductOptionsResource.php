@@ -270,8 +270,7 @@ class ProductOptionsResource extends ResourceBase {
         return $response;
 
       case 'MOVE_UP_FIELD':
-        if ($data['index'] > 0)
-        {
+        if ($data['index'] > 0) {
           $movedItem = array_splice($options['fields'], $data['index'], 1);
           array_splice($options['fields'], $data['index'] - 1, 0, $movedItem);
           $product->set('options', $options);
@@ -282,8 +281,7 @@ class ProductOptionsResource extends ResourceBase {
         return $response;
 
       case 'MOVE_DOWN_FIELD':
-        if ($data['index'] + 1 < count($options['fields']))
-        {
+        if ($data['index'] + 1 < count($options['fields'])) {
           $movedItem = array_splice($options['fields'], $data['index'], 1);
           array_splice($options['fields'], $data['index'] + 1, 0, $movedItem);
           $product->set('options', $options);
@@ -295,7 +293,7 @@ class ProductOptionsResource extends ResourceBase {
 
       case 'DELETE_FIELD':
         unset($options['fields'][$data['index']]);
-        // reindex the array to squash any gaps
+        // Reindex the array to squash any gaps.
         $options['fields'] = array_values($options['fields']);
         $product->set('options', $options);
         $product->save();

@@ -2,7 +2,6 @@
 
 namespace Drupal\commerce_product_options\Plugin\views\field;
 
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
@@ -39,13 +38,6 @@ class ProductOptionsField extends FieldPluginBase {
 
     $options['hide_alter_empty'] = ['default' => FALSE];
     return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
-    parent::buildOptionsForm($form, $form_state);
   }
 
   /**

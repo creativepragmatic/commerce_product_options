@@ -4,20 +4,15 @@ namespace Drupal\commerce_product_options\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Serialization\Json;
-use Drupal\Core\Entity\ContentEntityForm;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Path\AliasManagerInterface;
 use Drupal\Core\Path\CurrentPathStack;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
-use Drupal\commerce\AvailabilityManagerInterface;
 use Drupal\commerce\Context;
-use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_cart\CartManagerInterface;
 use Drupal\commerce_cart\CartProviderInterface;
 use Drupal\commerce_cart\Form\AddToCartForm;
@@ -64,8 +59,6 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
    *   The entity type bundle info.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time.
-   * @param \Drupal\commerce\AvailabilityManagerInterface $availability_manager
-   *   The availability manager.
    * @param \Drupal\commerce_cart\CartManagerInterface $cart_manager
    *   The cart manager.
    * @param \Drupal\commerce_cart\CartProviderInterface $cart_provider
@@ -169,7 +162,7 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
 
             $form['options']['driver_vehicle'][$machine_name_title] = [
               '#type' => $option['type'],
-              '#title' => $this->t($option['title']),
+              '#title' => $option['title'],
               '#options' => $this->getVehicles(),
               '#required' => $option['required'] ? TRUE : FALSE,
             ];
@@ -214,7 +207,7 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
                 $form['options'][$machine_name_title]['#default_value'] = $driver->get('field_last_name')->value;
               }
             }
-            else if (strcmp($option['type'], 'checkbox') === 0) {
+            elseif (strcmp($option['type'], 'checkbox') === 0) {
 
               if ($option['mandatoryOption']) {
                 $form['options'][$machine_name_title]['#default_value'] = TRUE;
@@ -223,7 +216,7 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
 
               if (!empty($option['priceModifier'])) {
                 $title = $option['title'] . ' +$' . number_format($option['priceModifier'], 2);
-                $form['options'][$machine_name_title]['#title'] = $this->t($title);
+                $form['options'][$machine_name_title]['#title'] = $title;
               }
 
               if ($sku_generation === 'byOption' && !empty($option['skuGeneration'])) {
@@ -233,21 +226,21 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
                 ];
               }
             }
-            else if (strcmp($option['type'], 'select') === 0) {
+            elseif (strcmp($option['type'], 'select') === 0) {
 
               $sku_generation = !empty($option['skuGeneration']) ? 'Yes' : 'No';
               $form['options'][$machine_name_title]['#attributes'] = [
                 'data-sku-generation' => [$sku_generation],
               ];
             }
-            else if (strcmp($option['type'], 'add-on') === 0) {
+            elseif (strcmp($option['type'], 'add-on') === 0) {
 
               $add_on_options = [];
               $sku_generation = 'No';
               $addOn = Product::load($option['addOnId']);
 
               $form['options'][$machine_name_title]['#type'] = 'select';
-              
+
               $form['options'][$machine_name_title]['#attributes'] = [
                 'data-sku-generation' => [$sku_generation],
                 'data-add-on' => 'Yes',
@@ -265,7 +258,7 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
             }
 
             if (!empty($option['helpText'])) {
-              $form['options'][$machine_name_title]['#description'] = $this->t($option['helpText']);
+              $form['options'][$machine_name_title]['#description'] = $option['helpText'];
             }
 
             if (!empty($option['size'])) {
@@ -557,7 +550,7 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
    */
   private function filterDriverClasses(array $classes, $level) {
 
-    $filtered_classes = array();
+    $filtered_classes = [];
 
     foreach ($classes as $class) {
 
@@ -587,7 +580,7 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
     $vehicles = $this->entityTypeManager
       ->getStorage('vehicle')
       ->loadByProperties([
-        'uid' => $this->getCurrentUser()->id()
+        'uid' => $this->getCurrentUser()->id(),
       ]);
 
     foreach ($vehicles as $vehicle) {
