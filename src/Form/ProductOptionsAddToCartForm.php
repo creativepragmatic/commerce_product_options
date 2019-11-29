@@ -20,6 +20,7 @@ use Drupal\commerce\Context;
 use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_cart\CartManagerInterface;
 use Drupal\commerce_cart\CartProviderInterface;
+use Drupal\commerce_cart\Form\AddToCartForm;
 use Drupal\commerce_order\Resolver\OrderTypeResolverInterface;
 use Drupal\commerce_price\Resolver\ChainPriceResolverInterface;
 use Drupal\commerce_product\Entity\Product;
@@ -31,63 +32,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides an order item add to cart form with product options.
  */
-class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface {
-
-  /**
-   * The availability manager.
-   *
-   * @var \Drupal\commerce_cart\Form\AvailabilityManagerInterface
-   */
-  protected $availabilityManager;
-
-  /**
-   * The cart manager.
-   *
-   * @var \Drupal\commerce_cart\CartManagerInterface
-   */
-  protected $cartManager;
-
-  /**
-   * The cart provider.
-   *
-   * @var \Drupal\commerce_cart\CartProviderInterface
-   */
-  protected $cartProvider;
-
-  /**
-   * The order type resolver.
-   *
-   * @var \Drupal\commerce_order\Resolver\OrderTypeResolverInterface
-   */
-  protected $orderTypeResolver;
-
-  /**
-   * The current store.
-   *
-   * @var \Drupal\commerce_store\CurrentStoreInterface
-   */
-  protected $currentStore;
-
-  /**
-   * The chain base price resolver.
-   *
-   * @var \Drupal\commerce_price\Resolver\ChainPriceResolverInterface
-   */
-  protected $chainPriceResolver;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The form ID.
-   *
-   * @var string
-   */
-  protected $formId;
+class ProductOptionsAddToCartForm extends AddToCartForm {
 
   /**
    * The entity type manager.
@@ -111,7 +56,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
   protected $aliasManager;
 
   /**
-   * Constructs a new AddToCartForm object.
+   * Constructs a new ProductOptionsAddToCartForm object.
    *
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager.
@@ -140,16 +85,8 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
    * @param \Drupal\Core\Path\AliasManagerInterface $alias_manager
    *   The path alias manager.
    */
-  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, AvailabilityManagerInterface $availability_manager, CartManagerInterface $cart_manager, CartProviderInterface $cart_provider, OrderTypeResolverInterface $order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, CurrentPathStack $current_path, AliasManagerInterface $alias_manager) {
-    parent::__construct($entity_manager, $entity_type_bundle_info, $time);
-
-    $this->availabilityManager = $availability_manager;
-    $this->cartManager = $cart_manager;
-    $this->cartProvider = $cart_provider;
-    $this->orderTypeResolver = $order_type_resolver;
-    $this->currentStore = $current_store;
-    $this->chainPriceResolver = $chain_price_resolver;
-    $this->currentUser = $current_user;
+  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, CartManagerInterface $cart_manager, CartProviderInterface $cart_provider, OrderTypeResolverInterface $order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, CurrentPathStack $current_path, AliasManagerInterface $alias_manager) {
+    parent::__construct($entity_manager, $entity_type_bundle_info, $time, $cart_manager, $cart_provider, $order_type_resolver, $current_store, $chain_price_resolver, $current_user);
     $this->entityTypeManager = $entity_type_manager;
     $this->currentPath = $current_path;
     $this->aliasManager = $alias_manager;
@@ -163,7 +100,6 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
       $container->get('entity.manager'),
       $container->get('entity_type.bundle.info'),
       $container->get('datetime.time'),
-      $container->get('commerce.availability_manager'),
       $container->get('commerce_cart.cart_manager'),
       $container->get('commerce_cart.cart_provider'),
       $container->get('commerce_order.chain_order_type_resolver'),
@@ -177,71 +113,12 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
   }
 
   /**
-   * Retrieves the current user.
-   *
-   * @return \Drupal\Core\Session\AccountInterface
-   *   The current user.
-   */
-  public function getCurrentUser() {
-    return $this->currentUser;
-  }
-
-  /**
-   * Retrieves the availability manager.
-   *
-   * @return \Drupal\commerce\AvailabilityManagerInterface
-   *   The availability manager.
-   */
-  public function getAvailabilityManager() {
-    return $this->availabilityManager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setEntity(EntityInterface $entity) {
-    $this->entity = $entity;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getBaseFormId() {
-    return $this->entity->getEntityTypeId() . '_' . $this->operation . '_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    if (empty($this->formId)) {
-      $this->formId = $this->getBaseFormId();
-      /** @var \Drupal\commerce_order\Entity\OrderItemInterface $order_item */
-      $order_item = $this->entity;
-      if ($purchased_entity = $order_item->getPurchasedEntity()) {
-        $this->formId .= '_' . $purchased_entity->getEntityTypeId() . '_' . $purchased_entity->id();
-      }
-    }
-
-    return $this->formId;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setFormId($form_id) {
-    $this->formId = $form_id;
-    return $this;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
 
-    $driver = User::load($this->getCurrentUser()->id());
+    $driver = User::load($this->currentUser->id());
     $product_id = $this->entity->getPurchasedEntity()->getProductId();
     $storage = $this->entityManager->getStorage('commerce_product');
     $product = $storage->load($product_id);
@@ -618,42 +495,6 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
   }
 
   /**
-   * Selects the store for the given purchasable entity.
-   *
-   * If the entity is sold from one store, then that store is selected.
-   * If the entity is sold from multiple stores, and the current store is
-   * one of them, then that store is selected.
-   *
-   * @param \Drupal\commerce\PurchasableEntityInterface $entity
-   *   The entity being added to cart.
-   *
-   * @throws \Exception
-   *   When the entity can't be purchased from the current store.
-   *
-   * @return \Drupal\commerce_store\Entity\StoreInterface
-   *   The selected store.
-   */
-  protected function selectStore(PurchasableEntityInterface $entity) {
-    $stores = $entity->getStores();
-    if (count($stores) === 1) {
-      $store = reset($stores);
-    }
-    elseif (count($stores) === 0) {
-      // Malformed entity.
-      throw new \Exception('The given entity is not assigned to any store.');
-    }
-    else {
-      $store = $this->currentStore->getStore();
-      if (!in_array($store, $stores)) {
-        // Indicates that the site listings are not filtered properly.
-        throw new \Exception("The given entity can't be purchased from the current store.");
-      }
-    }
-
-    return $store;
-  }
-
-  /**
    * Builds an array of values from form.
    *
    * @param \Drupal\Core\Form\FormStateInterface $form_state
@@ -734,7 +575,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
   }
 
   /**
-   * Gets all cars in the garage.
+   * Gets all cars saved in driver's the garage.
    *
    * @return array
    *   An associative array containing car details.
