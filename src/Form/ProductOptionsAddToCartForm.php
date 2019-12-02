@@ -582,7 +582,7 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
     $vehicles = $this->entityTypeManager
       ->getStorage('vehicle')
       ->loadByProperties([
-        'uid' => $this->getCurrentUser()->id(),
+        'uid' => $this->currentUser->id(),
       ]);
 
     foreach ($vehicles as $vehicle) {
