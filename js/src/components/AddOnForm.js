@@ -15,6 +15,7 @@ export class AddOnForm extends Component {
       addOnTitle: '',
       requiredRoles: [],
       helpText: '',
+      emptyText: '',
       isRequired: false
     };
 
@@ -118,6 +119,7 @@ console.log(error);
       addOnTitle: '',
       requiredRoles: [],
       helpText: '',
+      emptyText: '',
       isRequired: false,
 	});
   }
@@ -174,6 +176,7 @@ console.log(error);
       addOnTitle: this.state.addOnTitle,
       requiredRoles: this.state.requiredRoles,
       helpText: this.state.helpText,
+      emptyText: this.state.emptyText,
       required: this.state.isRequired
     };
 
@@ -235,6 +238,13 @@ console.log(error);
             rows="2"
             cols="20"
             value={this.state.helpText}
+            onChange={this.handleInputChange} />
+        </label>
+        <label>Empty Option Text:<br/>
+          <input
+            name="emptyText"
+            type="text"
+            value={this.state.emptyText}
             onChange={this.handleInputChange} />
         </label>
         <input

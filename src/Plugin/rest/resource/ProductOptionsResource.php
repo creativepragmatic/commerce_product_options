@@ -247,6 +247,7 @@ class ProductOptionsResource extends ResourceBase {
         $field['title'] = $data['addOnTitle'];
         $field['requiredRoles'] = $data['requiredRoles'];
         $field['helpText'] = $data['helpText'];
+        $field['emptyText'] = $data['emptyText'];
         $field['required'] = $data['required'];
         $options['fields'][] = $field;
         $product->set('options', $options);

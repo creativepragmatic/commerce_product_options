@@ -241,6 +241,11 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
 
               $form['options'][$machine_name_title]['#type'] = 'select';
 
+              if (!empty($option['emptyText'])) {
+                $form['options'][$machine_name_title]['#empty_value'] = '';
+                $form['options'][$machine_name_title]['#empty_option'] = $option['emptyText'];
+              }
+
               $form['options'][$machine_name_title]['#attributes'] = [
                 'data-sku-generation' => [$sku_generation],
                 'data-add-on' => 'Yes',
