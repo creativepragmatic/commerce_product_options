@@ -247,7 +247,9 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
               ];
 
               foreach ($addOn->getVariations() as $add_on_option) {
-                $add_on_options[$add_on_option->getSku()] = $add_on_option->label() . ', +$' . number_format($add_on_option->getPrice()->getNumber(), 2);
+                if ($add_on_option->isPublished()) {
+                  $add_on_options[$add_on_option->getSku()] = $add_on_option->label() . ', +$' . number_format($add_on_option->getPrice()->getNumber(), 2);
+                }
               }
 
               $form['options'][$machine_name_title]['#options'] = $add_on_options;
