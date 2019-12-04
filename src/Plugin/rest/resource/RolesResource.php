@@ -2,12 +2,14 @@
 
 namespace Drupal\commerce_product_options\Plugin\rest\resource;
 
+use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Drupal\user\Entity\Role;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -30,6 +32,13 @@ class RolesResource extends ResourceBase {
   protected $currentUser;
 
   /**
+   * The kill switch.
+   *
+   * @var \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
+   */
+  protected $killSwitch;
+
+  /**
    * Constructs a new RolesResource object.
    *
    * @param array $configuration
@@ -44,10 +53,13 @@ class RolesResource extends ResourceBase {
    *   A logger instance.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   A current user instance.
+   * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch $killSwitch
+   *   The kill switch.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountProxyInterface $current_user) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountProxyInterface $current_user, KillSwitch $killSwitch) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->currentUser = $current_user;
+    $this->killSwitch = $killSwitch;
   }
 
   /**
@@ -60,7 +72,8 @@ class RolesResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('commerce_product_options'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('page_cache_kill_switch')
     );
   }
 
@@ -74,6 +87,13 @@ class RolesResource extends ResourceBase {
    *   Throws exception expected.
    */
   public function get() {
+
+    // Prevent endpoint from being cached.
+    $this->killSwitch->trigger();
+
+    if (!$this->currentUser->hasPermission('administer commerce_product')) {
+      throw new AccessDeniedHttpException();
+    }
 
     $payload = [];
 

@@ -13,10 +13,10 @@ use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Drupal\user\Entity\User;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Psr\Log\LoggerInterface;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -74,7 +74,6 @@ class ProductOptionsResource extends ResourceBase {
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountProxyInterface $current_user, EntityTypeManagerInterface $entity_type_manager, KillSwitch $killSwitch) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-
     $this->currentUser = $current_user;
     $this->entityTypeManager = $entity_type_manager;
     $this->killSwitch = $killSwitch;
@@ -113,7 +112,7 @@ class ProductOptionsResource extends ResourceBase {
    */
   public function get($product_id) {
 
-    // Prevents endpoint from being cached.
+    // Prevent endpoint from being cached.
     $this->killSwitch->trigger();
 
     if (!$this->currentUser->hasPermission('administer commerce_product')) {
