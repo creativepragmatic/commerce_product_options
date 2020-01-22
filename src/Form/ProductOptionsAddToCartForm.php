@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Path\AliasManagerInterface;
 use Drupal\Core\Path\CurrentPathStack;
 use Drupal\Core\Session\AccountInterface;
@@ -51,6 +52,13 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
   protected $aliasManager;
 
   /**
+   * The Messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
    * Constructs a new ProductOptionsAddToCartForm object.
    *
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
@@ -77,12 +85,15 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
    *   The current path.
    * @param \Drupal\Core\Path\AliasManagerInterface $alias_manager
    *   The path alias manager.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
    */
-  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, CartManagerInterface $cart_manager, CartProviderInterface $cart_provider, OrderTypeResolverInterface $order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, CurrentPathStack $current_path, AliasManagerInterface $alias_manager) {
+  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, CartManagerInterface $cart_manager, CartProviderInterface $cart_provider, OrderTypeResolverInterface $order_type_resolver, CurrentStoreInterface $current_store, ChainPriceResolverInterface $chain_price_resolver, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, CurrentPathStack $current_path, AliasManagerInterface $alias_manager, MessengerInterface $messenger) {
     parent::__construct($entity_manager, $entity_type_bundle_info, $time, $cart_manager, $cart_provider, $order_type_resolver, $current_store, $chain_price_resolver, $current_user);
     $this->entityTypeManager = $entity_type_manager;
     $this->currentPath = $current_path;
     $this->aliasManager = $alias_manager;
+    $this->messenger = $messenger;
   }
 
   /**
@@ -101,7 +112,8 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
       $container->get('current_user'),
       $container->get('entity_type.manager'),
       $container->get('path.current'),
-      $container->get('path.alias_manager')
+      $container->get('path.alias_manager'),
+      $container->get('messenger')
     );
   }
 
@@ -427,7 +439,7 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
 
     // Other submit handlers might need the cart ID.
     if (empty($cart)) {
-      drupal_set_message(t('You have not selected any products to add to your shopping cart.'), 'error');
+      $this->messenger->addError(t('You have not selected any products to add to your shopping cart.'));
     }
     else {
       $form_state->set('cart_id', $cart->id());
