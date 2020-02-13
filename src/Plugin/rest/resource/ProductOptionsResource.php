@@ -307,7 +307,7 @@ class ProductOptionsResource extends ResourceBase {
         if ($product->hasVariations()) {
           foreach ($product->getVariations() as $variation) {
             $current_skus[] = $variation->getSku();
-            $variation->setUnpublished();
+            $variation->setActive(FALSE);
             $variation->save();
           }
         }

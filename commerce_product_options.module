@@ -63,7 +63,7 @@ function commerce_product_options_entity_operation_alter(array &$operations, Ent
     $operations['options'] = [
       'title' => 'Options',
       'url' => Url::fromRoute('commerce_product_options.controller', ['commerce_product' => $entity->id()]),
-      'weight' => 10,
+      'weight' => 15,
     ];
   }
 }
