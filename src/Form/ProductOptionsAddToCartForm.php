@@ -154,7 +154,7 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
 
         $form['form-instructions'] = [
           '#type' => 'markup',
-          '#markup' => '<p>Fill out this form to register</p>',
+          '#markup' => '<p id="p-fill-form">Fill out this form to register</p>',
         ];
 
         foreach ($options as $option) {
