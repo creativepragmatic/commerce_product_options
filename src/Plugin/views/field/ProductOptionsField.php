@@ -46,8 +46,8 @@ class ProductOptionsField extends FieldPluginBase {
   public function render(ResultRow $values) {
 
     if ($values->_entity instanceof Order) {
-      $title = $values->_relationship_entities['order_items']->getTitle();
-      $options = $values->_relationship_entities['order_items']->getData('product_option');
+      $title = $values->_relationship_entities['order_items_target_id']->getTitle();
+      $options = $values->_relationship_entities['order_items_target_id']->getData('product_option');
     }
     elseif ($values->_entity instanceof OrderItem) {
       $title = $values->_entity->getTitle();
