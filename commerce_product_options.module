@@ -86,3 +86,21 @@ function commerce_product_options_theme() {
     ],
   ];
 }
+
+/**
+ * Implements hook_mail().
+ */
+function commerce_product_options_mail($key, &$message, $params) {
+
+  $subject = 'Waitlist request: ' . $params['user'] . ' ' . $params['product'];
+  $options = [
+    'langcode' => $message['langcode'],
+  ];
+
+  switch ($key) {
+    case 'waitlist_add':
+      $message['subject'] = t($subject, [], $options);
+      $message['body'][] = $params['body'];
+      break;
+  }
+}

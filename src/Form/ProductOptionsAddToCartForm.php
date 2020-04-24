@@ -142,6 +142,14 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
         ],
       ];
 
+      $form['product-name'] = [
+        '#type' => 'hidden',
+        '#value' => $product->label(),
+        '#attributes' => [
+          'id' => 'product-name',
+        ],
+      ];
+
       $form['sku-generation'] = [
         '#type' => 'hidden',
         '#value' => $sku_generation,
@@ -313,6 +321,42 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
             }
           }
         }
+
+        $form['wait-list-add'] = [
+          '#type' => 'link',
+          '#title' => $this->t('Add me to the wait list'),
+          '#url' => Url::fromRoute('entity.commerce_product.canonical', [
+            'commerce_product' => $product_id,
+          ]),
+          '#attributes' => [
+            'id' => 'wait-list-add',
+            'style' => 'display:none;text-align:center;',
+          ],
+          '#suffix' => '<br/>',
+          '#weight' => 100,
+        ];
+
+        $form['wait-list-block'] = [
+          '#type' => 'container',
+          '#attributes' => [
+            'id' => 'wait-list-block',
+            'style' => 'display:none;',
+          ],
+          '#weight' => 110,
+        ];
+
+        $form['wait-list-block']['message'] = [
+          '#type' => 'markup',
+          '#markup' => "<p>You've been added to the wait list. This run group may be at capacity but additional spaces may be released. We will contact you with availability.</p>",
+        ];
+
+        $form['wait-list-block']['wait-list-close'] = array(
+          '#type' => 'button',
+          '#value' => $this->t('Close'),
+          '#attributes' => [
+            'id' => 'wait-list-close',
+          ],
+        );
       }
     }
 

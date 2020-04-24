@@ -133,7 +133,7 @@ class AvailabilityResource extends ResourceBase {
         $level = intval($this->stockServiceManager->getStockLevel(current($variation)));
 
         if ($level < 1) {
-          return (new ResourceResponse('SOLD OUT', 200));
+          return (new ResourceResponse('UNAVAILABLE', 200));
         }
         elseif ($level > 0 && $level < 10) {
           return (new ResourceResponse('Less than 10 available.', 200));
