@@ -7,9 +7,11 @@ use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\commerce_stock\StockServiceManagerInterface;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\rest\ResourceResponse;
+use Drupal\rest\ModifiedResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -106,7 +108,7 @@ class AvailabilityResource extends ResourceBase {
    * @param string $sku
    *   SKU of variation availability is being checked for.
    *
-   * @return \Drupal\rest\ResourceResponse
+   * @return \Drupal\rest\ModifiedResourceResponse
    *   The HTTP response object.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
@@ -127,19 +129,19 @@ class AvailabilityResource extends ResourceBase {
         $always = $checker->getIsAlwaysInStock(current($variation));
 
         if ($always) {
-          return (new ResourceResponse('plentiful', 200));
+          return (new ModifiedResourceResponse('plentiful', 200));
         }
 
         $level = intval($this->stockServiceManager->getStockLevel(current($variation)));
 
         if ($level < 1) {
-          return (new ResourceResponse('UNAVAILABLE', 200));
+          return (new ModifiedResourceResponse('UNAVAILABLE', 200));
         }
-        elseif ($level > 0 && $level < 10) {
-          return (new ResourceResponse('Less than 10 available.', 200));
+        elseif ($level >= 1 && $level < 10) {
+          return (new ModifiedResourceResponse('Less than 10 available.', 200));
         }
         else {
-          return (new ResourceResponse('plentiful', 200));
+          return (new ModifiedResourceResponse('plentiful', 200));
         }
       }
       else {
