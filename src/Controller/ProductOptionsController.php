@@ -45,12 +45,9 @@ class ProductOptionsController extends ControllerBase {
    */
   public function optionsPage($commerce_product) {
 
-    $product = $this->entityTypeManager
-      ->getStorage('commerce_product')
-      ->load($commerce_product);
     $product_type = $this->entityTypeManager
       ->getStorage('commerce_product_type')
-      ->load($product->bundle());
+      ->load($commerce_product->bundle());
 
     $page['#attached']['library'][] = 'commerce_product_options/admin';
 
@@ -59,7 +56,7 @@ class ProductOptionsController extends ControllerBase {
       '#attributes' => [
         'id' => 'product-id',
       ],
-      '#value' => $commerce_product,
+      '#value' => $commerce_product->id(),
     ];
 
     $page['variation-type'] = [
@@ -75,7 +72,7 @@ class ProductOptionsController extends ControllerBase {
       '#attributes' => [
         'id' => 'product-title',
       ],
-      '#value' => $product->getTitle(),
+      '#value' => $commerce_product->getTitle(),
     ];
 
     $page['options-container'] = [

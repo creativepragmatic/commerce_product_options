@@ -409,14 +409,14 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
       /** @var \Drupal\commerce\PurchasableEntityInterface $purchased_entity */
       $purchased_entity = $order_item->getPurchasedEntity();
 
-      $order_type_id = $this->orderTypeResolver->resolve($order_item);
-      $store = $this->selectStore($purchased_entity);
-      $cart = $this->cartProvider->getCart($order_type_id, $store);
+      $cart = $order_item->getOrder();
       if (!$cart) {
+        $order_type_id = $this->orderTypeResolver->resolve($order_item);
+        $store = $this->selectStore($purchased_entity);
         $cart = $this->cartProvider->createCart($order_type_id, $store);
       }
 
-      $this->cartManager->addOrderItem($cart, $order_item, FALSE, TRUE);
+      $this->entity = $this->cartManager->addOrderItem($cart, $order_item, FALSE, TRUE);
     }
     elseif ($form_state->getValue('sku-generation') === 'byOption') {
       $all_fields = $form_state->getCompleteForm();
@@ -430,17 +430,17 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
             ->execute();
           $purchased_entity = $storage->load(reset($entity_id));
 
-          $store = $this->selectStore($purchased_entity);
           $order_item = $this->cartManager->createOrderItem($purchased_entity);
           $options['Option'] = $field['#title']->getUntranslatedString();
           $order_item->setData('product_option', $options);
-          $order_type_id = $this->orderTypeResolver->resolve($order_item);
-          $cart = $this->cartProvider->getCart($order_type_id, $store);
+
+          $cart = $order_item->getOrder();
           if (!$cart) {
+            $order_type_id = $this->orderTypeResolver->resolve($order_item);
+            $store = $this->selectStore($purchased_entity);
             $cart = $this->cartProvider->createCart($order_type_id, $store);
           }
-
-          $this->cartManager->addOrderItem($cart, $order_item, FALSE, TRUE);
+          $this->entity = $this->cartManager->addOrderItem($cart, $order_item, FALSE, TRUE);
         }
       }
     }
@@ -448,10 +448,10 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
       /** @var \Drupal\commerce\PurchasableEntityInterface $purchased_entity */
       $purchased_entity = $order_item->getPurchasedEntity();
 
-      $order_type_id = $this->orderTypeResolver->resolve($order_item);
-      $store = $this->selectStore($purchased_entity);
-      $cart = $this->cartProvider->getCart($order_type_id, $store);
+      $cart = $order_item->getOrder();
       if (!$cart) {
+        $order_type_id = $this->orderTypeResolver->resolve($order_item);
+        $store = $this->selectStore($purchased_entity);
         $cart = $this->cartProvider->createCart($order_type_id, $store);
       }
       $this->entity = $this->cartManager->addOrderItem($cart, $order_item, $form_state->get(['settings', 'combine']));
@@ -482,7 +482,7 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
     }
 
     // Other submit handlers might need the cart ID.
-    if (empty($cart)) {
+    if (!$cart) {
       $this->messenger->addError(t('You have not selected any products to add to your shopping cart.'));
     }
     else {
@@ -544,6 +544,12 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
         $context = new Context($this->currentUser, $store);
         $resolved_price = $this->chainPriceResolver->resolve($purchased_entity, $entity->getQuantity(), $context);
         $entity->setUnitPrice($resolved_price);
+      }
+      $order_type_id = $this->orderTypeResolver->resolve($entity);
+      $store = $this->selectStore($purchased_entity);
+      $cart = $this->cartProvider->getCart($order_type_id, $store);
+      if ($cart) {
+        $entity->set('order_id', $cart->id());
       }
     }
 

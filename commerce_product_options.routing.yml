@@ -5,5 +5,8 @@ commerce_product_options.controller:
     _title: 'Options'
   options:
     _admin_route: TRUE
+    parameters:
+      commerce_product:
+        type: 'entity:commerce_product'
   requirements:
     _permission: 'access commerce administration pages'
