@@ -621,11 +621,6 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
 
     $filtered_classes = [];
 
-    // TODO: REMEMBER TO REMOVE AFTER 2020 SEASON!!!
-    if (strcmp($level, 'NSL') === 0) {
-      $level = 'NOV';
-    }
-
     foreach ($classes as $class) {
 
       array_push($filtered_classes, $class);
