@@ -620,15 +620,13 @@ class ProductOptionsAddToCartForm extends AddToCartForm {
   private function filterDriverClasses(array $classes, $level) {
 
     $filtered_classes = [];
-
     foreach ($classes as $class) {
 
-      array_push($filtered_classes, $class);
-      if (strcmp($class['skuSegment'], $level) === 0) {
-        break;
+      if (strcmp($class['skuSegment'], 'SFF') !== 0) {
+        array_push($filtered_classes, $class);
       }
 
-      if (empty($level)) {
+      if (strcmp($class['skuSegment'], $level) === 0 || empty($level)) {
         break;
       }
     }
